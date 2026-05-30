@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flare to Flame — Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;padding:28px 14px 50px;display:flex;flex-direction:column;align-items:center;}
+.header{text-align:center;margin-bottom:26px;}
+.brand-tag{font-size:9px;letter-spacing:4px;color:#C9A84C;text-transform:uppercase;margin-bottom:7px;font-weight:600;}
+.brand-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#FAF7F2;letter-spacing:-0.5px;margin-bottom:4px;}
+.brand-sub{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:rgba(201,168,76,0.7);}
+.tap-hint{margin-top:11px;font-size:9px;color:rgba(250,247,242,0.3);letter-spacing:1px;}
+
+.cards{width:100%;max-width:640px;display:flex;flex-direction:column;gap:14px;}
+
+.card{position:relative;width:100%;border-radius:20px;overflow:hidden;cursor:pointer;transition:all 0.45s cubic-bezier(0.16,1,0.3,1);min-height:140px;}
+.card:hover{transform:translateY(-3px);}
+.card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:left center;}
+.card-overlay{position:absolute;inset:0;pointer-events:none;}
+.card-inner{position:relative;display:flex;flex-direction:row;align-items:stretch;min-height:140px;}
+.card-spacer{width:30%;flex-shrink:0;}
+.card-text{flex:1;display:flex;flex-direction:column;justify-content:center;padding:18px 22px 52px 16px;gap:5px;}
+.card-cat{font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.14em;font-weight:700;text-transform:uppercase;}
+.card-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;line-height:1.1;letter-spacing:-0.3px;}
+.card-divider{width:36px;height:1.5px;opacity:0.55;margin:4px 0;}
+.card-short{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;font-weight:600;line-height:1.45;}
+
+.card-full{max-height:0;overflow:hidden;opacity:0;transition:max-height .5s cubic-bezier(0.16,1,0.3,1),opacity .4s ease,margin .4s ease,padding .4s ease;margin-top:0;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;line-height:1.6;}
+.card.open .card-full{max-height:240px;opacity:1;margin-top:10px;padding-top:10px;border-top-width:1px;border-top-style:solid;}
+.card-brand{display:inline-block;max-height:0;overflow:hidden;opacity:0;transition:all .45s ease;margin-top:0;border-radius:5px;padding:0 9px;font-family:'Jost',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;border-width:1px;border-style:solid;}
+.card.open .card-brand{max-height:30px;opacity:1;margin-top:9px;padding:4px 9px;}
+
+.card-expand{position:absolute;bottom:11px;left:32%;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.3px;text-transform:uppercase;font-weight:600;transition:opacity .3s;}
+.book-btn{position:absolute;bottom:12px;right:16px;background:linear-gradient(135deg,#d4af37,#b89326);color:#fff;padding:8px 16px;border-radius:9px;font-family:'Jost',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;text-decoration:none;box-shadow:0 4px 16px rgba(180,140,30,0.45);z-index:10;white-space:nowrap;}
+.story-label{position:absolute;top:14px;left:14px;background:rgba(0,0,0,0.36);backdrop-filter:blur(8px);border-radius:6px;padding:3px 9px;font-family:'Cormorant Garamond',serif;font-size:10px;font-style:italic;color:rgba(255,255,255,0.82);}
+
+.footer{margin-top:30px;font-size:8px;letter-spacing:3px;color:rgba(201,168,76,0.3);text-transform:uppercase;text-align:center;font-weight:600;}
+</style></head>
+<body>
+<div class="header">
+  <div class="brand-tag">Because Details Define You</div>
+  <div class="brand-name">Flare to Flame</div>
+  <div class="brand-sub">Start the Spark. Become the Flame.</div>
+  <div class="tap-hint">Tap any service to explore</div>
+</div>
+
+<div class="cards">
+  <div class="card" id="card0" onclick="toggleCard(0)">
+    <img class="card-img" src="https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/hair_ziaoxu.jpg" alt="Hair Botox" style="object-position:18% center">
+    <div class="card-overlay" style="background:linear-gradient(to right,transparent 28%,rgba(250,248,244,0.85) 48%,rgba(248,245,240,0.97) 100%)"></div>
+    <div class="card-inner">
+      <div class="card-spacer"></div>
+      <div class="card-text">
+        <div class="card-cat" style="color:#7a3ab0">HAIR THERAPY</div>
+        <div class="card-name" style="color:#1a0a04">Hair Botox</div>
+        <div class="card-divider" style="background:#7a3ab0"></div>
+        <div class="card-short" style="color:rgba(50,25,8,0.82)">Frizz-free, luminous hair. Salon-worthy glow — every single day.</div>
+        <div class="card-full" id="full0" style="color:rgba(40,20,4,0.92);border-top-color:#7a3ab033">A deeply nourishing smoothing ritual that repairs each strand from within. Moroccanoil formulas infuse silk proteins and bond-restoring actives — leaving hair impossibly soft, reflective, and frizz-free for weeks.</div>
+        <div class="card-brand" id="brand0" style="background:#7a3ab018;border-color:#7a3ab055;color:#7a3ab0">Moroccanoil · Premium</div>
+      </div>
+    </div>
+    <div class="card-expand" id="hint0" style="color:rgba(50,25,8,0.5)">▼ More details</div>
+    <a class="book-btn" href="https://wa.me/919718831333?text=Book%20Hair%20Botox" target="_blank" onclick="event.stopPropagation()">Book Now →</a>
+    <div class="story-label">The Awakening</div>
+  </div>
+  <div class="card" id="card1" onclick="toggleCard(1)">
+    <img class="card-img" src="https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/skin_ykrobc.jpg" alt="Signature Facial" style="object-position:22% center">
+    <div class="card-overlay" style="background:linear-gradient(to right,transparent 28%,rgba(250,248,244,0.85) 48%,rgba(248,245,240,0.97) 100%)"></div>
+    <div class="card-inner">
+      <div class="card-spacer"></div>
+      <div class="card-text">
+        <div class="card-cat" style="color:#8a5020">SKIN RITUAL</div>
+        <div class="card-name" style="color:#1a0a04">Signature Facial</div>
+        <div class="card-divider" style="background:#8a5020"></div>
+        <div class="card-short" style="color:rgba(50,25,8,0.82)">Professional glow — without any makeup. Visible from the first session.</div>
+        <div class="card-full" id="full1" style="color:rgba(40,20,4,0.92);border-top-color:#8a502033">A luxurious multi-step skin revival using Casmara and O3+ formulas. Deep cleanse, enzyme exfoliation, hydrating mask and facial massage — restoring radiance, firmness and luminosity to your skin.</div>
+        <div class="card-brand" id="brand1" style="background:#8a502018;border-color:#8a502055;color:#8a5020">Casmara · O3+ · Signature</div>
+      </div>
+    </div>
+    <div class="card-expand" id="hint1" style="color:rgba(50,25,8,0.5)">▼ More details</div>
+    <a class="book-btn" href="https://wa.me/919718831333?text=Book%20Signature%20Facial" target="_blank" onclick="event.stopPropagation()">Book Now →</a>
+    <div class="story-label">The Ritual</div>
+  </div>
+  <div class="card" id="card2" onclick="toggleCard(2)">
+    <img class="card-img" src="https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/makeup_aqpzal.jpg" alt="Bridal Makeup Premium" style="object-position:12% center">
+    <div class="card-overlay" style="background:linear-gradient(to right,transparent 28%,rgba(250,248,244,0.85) 48%,rgba(248,245,240,0.97) 100%)"></div>
+    <div class="card-inner">
+      <div class="card-spacer"></div>
+      <div class="card-text">
+        <div class="card-cat" style="color:#9a1a4a">BRIDAL COUTURE</div>
+        <div class="card-name" style="color:#1a0a04">Bridal Makeup Premium</div>
+        <div class="card-divider" style="background:#9a1a4a"></div>
+        <div class="card-short" style="color:rgba(50,25,8,0.82)">Aap apne big day par sabse sundar dikhein. Guaranteed.</div>
+        <div class="card-full" id="full2" style="color:rgba(40,20,4,0.92);border-top-color:#9a1a4a33">Expertly crafted with Floractive Professional formulas. Flawless base, detailed eye artistry and long-wear finish that lasts all celebration long — from first light to last dance. Photographically perfect.</div>
+        <div class="card-brand" id="brand2" style="background:#9a1a4a18;border-color:#9a1a4a55;color:#9a1a4a">Floractive Professional · Signature</div>
+      </div>
+    </div>
+    <div class="card-expand" id="hint2" style="color:rgba(50,25,8,0.5)">▼ More details</div>
+    <a class="book-btn" href="https://wa.me/919718831333?text=Book%20Bridal%20Makeup%20Premium" target="_blank" onclick="event.stopPropagation()">Book Now →</a>
+    <div class="story-label">The Bloom</div>
+  </div>
+  <div class="card" id="card3" onclick="toggleCard(3)">
+    <img class="card-img" src="https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/nails_fh8kny.jpg" alt="Nail Art Premium" style="object-position:20% center">
+    <div class="card-overlay" style="background:linear-gradient(to right,transparent 28%,rgba(250,248,244,0.85) 48%,rgba(248,245,240,0.97) 100%)"></div>
+    <div class="card-inner">
+      <div class="card-spacer"></div>
+      <div class="card-text">
+        <div class="card-cat" style="color:#0a6060">NAIL ATELIER</div>
+        <div class="card-name" style="color:#1a0a04">Nail Art Premium</div>
+        <div class="card-divider" style="background:#0a6060"></div>
+        <div class="card-short" style="color:rgba(50,25,8,0.82)">Custom intricate designs. Nails that turn heads — every glance.</div>
+        <div class="card-full" id="full3" style="color:rgba(40,20,4,0.92);border-top-color:#0a606033">Hand-crafted nail artistry using Kanpeki premium gel formulas. Intricate designs, chrome finishes and embellishments applied by expert nail artists. Chip-resistant, luminous, lasting up to three weeks.</div>
+        <div class="card-brand" id="brand3" style="background:#0a606018;border-color:#0a606055;color:#0a6060">Kanpeki · Signature</div>
+      </div>
+    </div>
+    <div class="card-expand" id="hint3" style="color:rgba(50,25,8,0.5)">▼ More details</div>
+    <a class="book-btn" href="https://wa.me/919718831333?text=Book%20Nail%20Art%20Premium" target="_blank" onclick="event.stopPropagation()">Book Now →</a>
+    <div class="story-label">The Chrome Edit</div>
+  </div>
+  <div class="card" id="card4" onclick="toggleCard(4)">
+    <img class="card-img" src="https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/waxing_cq0iir.jpg" alt="Full Body Waxing" style="object-position:18% center">
+    <div class="card-overlay" style="background:linear-gradient(to right,transparent 28%,rgba(250,248,244,0.85) 48%,rgba(248,245,240,0.97) 100%)"></div>
+    <div class="card-inner">
+      <div class="card-spacer"></div>
+      <div class="card-text">
+        <div class="card-cat" style="color:#7a5008">BODY RITUAL</div>
+        <div class="card-name" style="color:#1a0a04">Full Body Waxing</div>
+        <div class="card-divider" style="background:#7a5008"></div>
+        <div class="card-short" style="color:rgba(50,25,8,0.82)">Head to toe smooth skin. Rica formulas. Minimal discomfort.</div>
+        <div class="card-full" id="full4" style="color:rgba(40,20,4,0.92);border-top-color:#7a500833">A complete body smoothing ritual using Rica warm wax — renowned for its honey and botanical resin formula. Expert application, precise removal, soothing post-wax gel. Touchably soft skin that lasts.</div>
+        <div class="card-brand" id="brand4" style="background:#7a500818;border-color:#7a500855;color:#7a5008">Rica · Signature</div>
+      </div>
+    </div>
+    <div class="card-expand" id="hint4" style="color:rgba(50,25,8,0.5)">▼ More details</div>
+    <a class="book-btn" href="https://wa.me/919718831333?text=Book%20Full%20Body%20Waxing" target="_blank" onclick="event.stopPropagation()">Book Now →</a>
+    <div class="story-label">The Golden Veil</div>
+  </div>
+  <div class="card" id="card5" onclick="toggleCard(5)">
+    <img class="card-img" src="https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/threading_cmm20k.jpg" alt="Threading Full Face" style="object-position:22% center">
+    <div class="card-overlay" style="background:linear-gradient(to right,transparent 28%,rgba(250,248,244,0.85) 48%,rgba(248,245,240,0.97) 100%)"></div>
+    <div class="card-inner">
+      <div class="card-spacer"></div>
+      <div class="card-text">
+        <div class="card-cat" style="color:#3a3a5a">PRECISION STUDIO</div>
+        <div class="card-name" style="color:#1a0a04">Threading Full Face</div>
+        <div class="card-divider" style="background:#3a3a5a"></div>
+        <div class="card-short" style="color:rgba(50,25,8,0.82)">Sculpted arches. Chemical-free. Smooth radiant finish instantly.</div>
+        <div class="card-full" id="full5" style="color:rgba(40,20,4,0.92);border-top-color:#3a3a5a33">Expert threading technique removes hair from the root with surgical precision. Defines brows, shapes facial contours and leaves skin smooth with zero chemical irritation. The purest form of luxury grooming.</div>
+        <div class="card-brand" id="brand5" style="background:#3a3a5a18;border-color:#3a3a5a55;color:#3a3a5a">Expert Threading · Classic</div>
+      </div>
+    </div>
+    <div class="card-expand" id="hint5" style="color:rgba(50,25,8,0.5)">▼ More details</div>
+    <a class="book-btn" href="https://wa.me/919718831333?text=Book%20Threading%20Full%20Face" target="_blank" onclick="event.stopPropagation()">Book Now →</a>
+    <div class="story-label">The Precision Edit</div>
+  </div>
+  <div class="card" id="card6" onclick="toggleCard(6)">
+    <img class="card-img" src="https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/grooming_qid5gs.jpg" alt="Grooming Package" style="object-position:18% center">
+    <div class="card-overlay" style="background:linear-gradient(to right,transparent 28%,rgba(8,16,18,0.86) 48%,rgba(6,12,14,0.98) 100%)"></div>
+    <div class="card-inner">
+      <div class="card-spacer"></div>
+      <div class="card-text">
+        <div class="card-cat" style="color:#90d8e8">MEN'S GROOMING</div>
+        <div class="card-name" style="color:#FAF7F2">Grooming Package</div>
+        <div class="card-divider" style="background:#90d8e8"></div>
+        <div class="card-short" style="color:rgba(250,247,242,0.82)">Precision trim. Hot towel ritual. Walk out sharp and confident.</div>
+        <div class="card-full" id="full6" style="color:rgba(250,247,242,0.92);border-top-color:#90d8e833">A complete men's grooming experience — precision haircut, expert beard shaping, hot towel ritual and skin care. Wella formulas and expert technique deliver a sharp, polished finish that commands attention.</div>
+        <div class="card-brand" id="brand6" style="background:#90d8e818;border-color:#90d8e855;color:#FAF7F2">Wella · Premium</div>
+      </div>
+    </div>
+    <div class="card-expand" id="hint6" style="color:rgba(250,247,242,0.5)">▼ More details</div>
+    <a class="book-btn" href="https://wa.me/919718831333?text=Book%20Grooming%20Package" target="_blank" onclick="event.stopPropagation()">Book Now →</a>
+    <div class="story-label">The Sharp Edit</div>
+  </div>
+  <div class="card" id="card7" onclick="toggleCard(7)">
+    <img class="card-img" src="https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg" alt="Full Makeover Session" style="object-position:20% center">
+    <div class="card-overlay" style="background:linear-gradient(to right,transparent 28%,rgba(8,16,18,0.86) 48%,rgba(6,12,14,0.98) 100%)"></div>
+    <div class="card-inner">
+      <div class="card-spacer"></div>
+      <div class="card-text">
+        <div class="card-cat" style="color:#C9A84C">SIGNATURE EXPERIENCE</div>
+        <div class="card-name" style="color:#FAF7F2">Full Makeover Session</div>
+        <div class="card-divider" style="background:#C9A84C"></div>
+        <div class="card-short" style="color:rgba(250,247,242,0.82)">Head to toe transformation. Confident. Radiant. Unforgettable.</div>
+        <div class="card-full" id="full7" style="color:rgba(250,247,242,0.92);border-top-color:#C9A84C33">The ultimate Flare to Flame experience. Personalized hair ritual, skin preparation, flawless makeup artistry and finishing touches — all crafted exclusively for you. Every detail intentional. Every moment luxurious.</div>
+        <div class="card-brand" id="brand7" style="background:#C9A84C18;border-color:#C9A84C55;color:#FAF7F2">Multi-brand · Signature</div>
+      </div>
+    </div>
+    <div class="card-expand" id="hint7" style="color:rgba(250,247,242,0.5)">▼ More details</div>
+    <a class="book-btn" href="https://wa.me/919718831333?text=Book%20Full%20Makeover%20Session" target="_blank" onclick="event.stopPropagation()">Book Now →</a>
+    <div class="story-label">The Grand Ritual</div>
+  </div>
+</div>
+
+<div class="footer">Because Details Define You</div>
+
+<script>
+/* ===== EXPAND / COLLAPSE with smooth animation ===== */
+function toggleCard(i){
+  var card = document.getElementById('card'+i);
+  var hint = document.getElementById('hint'+i);
+  var isOpen = card.classList.toggle('open');
+  hint.textContent = isOpen ? '\u25B2 Less' : '\u25BC More details';
+
+  /* =====================================================================
+     AIRTABLE HOOK — wire on/after June 1 (when Base ID is added)
+     ---------------------------------------------------------------------
+     Right now the full description loads from this file (hardcoded).
+     To switch to LIVE Airtable AI descriptions, uncomment & fill below:
+
+     if(isOpen){ loadFromAirtable(i); }
+
+     function loadFromAirtable(i){
+       const TOKEN = 'YOUR_AIRTABLE_PAT';
+       const BASE  = 'YOUR_BASE_ID';
+       const SERVICE_ID = CARD_RECORD_IDS[i];   // map card -> Airtable record
+       fetch('https://api.airtable.com/v0/'+BASE+'/Services/'+SERVICE_ID, {
+         headers:{ Authorization:'Bearer '+TOKEN }
+       })
+       .then(r=>r.json())
+       .then(d=>{ document.getElementById('full'+i).innerHTML = d.fields['AI Description']; });
+     }
+     ===================================================================== */
+}
+</script>
+</body></html>

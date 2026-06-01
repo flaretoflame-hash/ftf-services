@@ -123,15 +123,7 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 
   <div class="filter-wrap">
     <div class="filter-bar" id="filterBar">
-      <button class="filter-btn active" onclick="setFilter('all',this)">All Services</button>
-      <button class="filter-btn" onclick="setFilter('hair',this)">Hair</button>
-      <button class="filter-btn" onclick="setFilter('skin',this)">Skin</button>
-      <button class="filter-btn" onclick="setFilter('bridal',this)">Bridal</button>
-      <button class="filter-btn" onclick="setFilter('nails',this)">Nails</button>
-      <button class="filter-btn" onclick="setFilter('body',this)">Body</button>
-      <button class="filter-btn" onclick="setFilter('precision',this)">Precision</button>
-      <button class="filter-btn" onclick="setFilter('mens',this)">Men's</button>
-      <button class="filter-btn" onclick="setFilter('signature',this)">Signature</button>
+      <button class="filter-btn active" onclick="setFilter('all',this)">Loading...</button>
     </div>
   </div>
 
@@ -159,18 +151,115 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 </a>
 
 <script>
-var SERVICES = [
-  {id:0,category:'hair',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/hair_ziaoxu.jpg',imgPos:'18% center',overlayLight:true,cat:'Hair Therapy',catColor:'#7a3ab0',name:'Hair Botox',short:'Frizz-free, luminous hair. Salon-worthy glow — every single day.',full:'A deeply nourishing smoothing ritual that repairs each strand from within. Moroccanoil formulas infuse silk proteins and bond-restoring actives — leaving hair impossibly soft, reflective, and frizz-free for weeks.',brand:'Moroccanoil · Premium',story:'The Awakening',waText:'Book%20Hair%20Botox'},
-  {id:1,category:'skin',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/skin_ykrobc.jpg',imgPos:'22% center',overlayLight:true,cat:'Skin Ritual',catColor:'#8a5020',name:'Signature Facial',short:'Professional glow — without any makeup. Visible from the first session.',full:'A luxurious multi-step skin revival using Casmara and O3+ formulas. Deep cleanse, enzyme exfoliation, hydrating mask and facial massage — restoring radiance, firmness and luminosity to your skin.',brand:'Casmara · O3+ · Signature',story:'The Ritual',waText:'Book%20Signature%20Facial'},
-  {id:2,category:'bridal',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/makeup_aqpzal.jpg',imgPos:'12% center',overlayLight:true,cat:'Bridal Couture',catColor:'#9a1a4a',name:'Bridal Makeup Premium',short:'Your most radiant look on the most important day. Guaranteed.',full:'Expertly crafted with Floractive Professional formulas. Flawless base, detailed eye artistry and long-wear finish that lasts all celebration long — from first light to last dance. Photographically perfect.',brand:'Floractive Professional · Signature',story:'The Bloom',waText:'Book%20Bridal%20Makeup%20Premium'},
-  {id:3,category:'nails',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/nails_fh8kny.jpg',imgPos:'20% center',overlayLight:true,cat:'Nail Atelier',catColor:'#0a6060',name:'Nail Art Premium',short:'Custom intricate designs. Nails that turn heads — every glance.',full:'Hand-crafted nail artistry using Kanpeki premium gel formulas. Intricate designs, chrome finishes and embellishments applied by expert nail artists. Chip-resistant, luminous, lasting up to three weeks.',brand:'Kanpeki · Signature',story:'The Chrome Edit',waText:'Book%20Nail%20Art%20Premium'},
-  {id:4,category:'body',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/waxing_cq0iir.jpg',imgPos:'18% center',overlayLight:true,cat:'Body Ritual',catColor:'#7a5008',name:'Full Body Waxing',short:'Head to toe smooth skin. Rica formulas. Minimal discomfort.',full:'A complete body smoothing ritual using Rica warm wax — renowned for its honey and botanical resin formula. Expert application, precise removal, soothing post-wax gel. Touchably soft skin that lasts.',brand:'Rica · Signature',story:'The Golden Veil',waText:'Book%20Full%20Body%20Waxing'},
-  {id:5,category:'precision',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/threading_cmm20k.jpg',imgPos:'22% center',overlayLight:true,cat:'Precision Studio',catColor:'#3a3a5a',name:'Threading Full Face',short:'Sculpted arches. Chemical-free. Smooth radiant finish instantly.',full:'Expert threading technique removes hair from the root with surgical precision. Defines brows, shapes facial contours and leaves skin smooth with zero chemical irritation. The purest form of luxury grooming.',brand:'Expert Threading · Classic',story:'The Precision Edit',waText:'Book%20Threading%20Full%20Face'},
-  {id:6,category:'mens',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/grooming_qid5gs.jpg',imgPos:'18% center',overlayLight:false,cat:"Men's Grooming",catColor:'#90d8e8',name:'Grooming Package',short:'Precision trim. Hot towel ritual. Walk out sharp and confident.',full:'A complete men\'s grooming experience — precision haircut, expert beard shaping, hot towel ritual and skin care. Wella formulas and expert technique deliver a sharp, polished finish that commands attention.',brand:'Wella · Premium',story:'The Sharp Edit',waText:'Book%20Grooming%20Package'},
-  {id:7,category:'signature',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg',imgPos:'20% center',overlayLight:false,cat:'Signature Experience',catColor:'#C9A84C',name:'Full Makeover Session',short:'Head to toe transformation. Confident. Radiant. Unforgettable.',full:'The ultimate Flare to Flame experience. Personalized hair ritual, skin preparation, flawless makeup artistry and finishing touches — all crafted exclusively for you. Every detail intentional. Every moment luxurious.',brand:'Multi-brand · Signature',story:'The Grand Ritual',waText:'Book%20Full%20Makeover%20Session'}
-];
+/* ── AIRTABLE CONFIG ── */
+var AT_BASE = 'appK1bKgelTKXQKkR';
+var AT_TABLE = 'tblUOhjX6QJLakc4n';
+var AT_VIEW  = 'viwyiNkhJpT0mnqUH';
+var AT_TOKEN = 'patBtlTIGkRFkIFoe.f8934bb38cc9c1268fe9bda840e0cffd14fd3129e913746a0f03870e0756ec8e';
 
-/* AIRTABLE HOOK — wire June 1: replace SERVICES with a fetch from base/Services view viwyiNkhJpT0mnqUH, map fields, call renderPage() */
+/* ── CATEGORY CONFIG ── */
+var CAT_MAP = {
+  'Hair':      {key:'hair',     cat:'Hair Therapy',      catColor:'#7a3ab0', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/hair_ziaoxu.jpg',      imgPos:'18% center', overlayLight:true},
+  'Skin':      {key:'skin',     cat:'Skin Ritual',       catColor:'#8a5020', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/skin_ykrobc.jpg',      imgPos:'22% center', overlayLight:true},
+  'Makeup':    {key:'makeup',   cat:'Bridal Couture',    catColor:'#9a1a4a', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/makeup_aqpzal.jpg',    imgPos:'12% center', overlayLight:true},
+  'Nails':     {key:'nails',    cat:'Nail Atelier',      catColor:'#0a6060', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/nails_fh8kny.jpg',     imgPos:'20% center', overlayLight:true},
+  'Waxing':    {key:'waxing',   cat:'Body Ritual',       catColor:'#7a5008', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/waxing_cq0iir.jpg',    imgPos:'18% center', overlayLight:true},
+  'Threading': {key:'threading',cat:'Precision Studio',  catColor:'#3a3a5a', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/threading_cmm20k.jpg', imgPos:'22% center', overlayLight:true},
+  'Grooming':  {key:'grooming', cat:"Men's Grooming",    catColor:'#4682B4', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/grooming_qid5gs.jpg',  imgPos:'18% center', overlayLight:false},
+  'Signature': {key:'signature',cat:'Signature Experience',catColor:'#C9A84C',img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false},
+  'Body':      {key:'body',     cat:'Body Ritual',       catColor:'#4A7C59', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/waxing_cq0iir.jpg',    imgPos:'18% center', overlayLight:true},
+  'Kids':      {key:'kids',     cat:'Kids',              catColor:'#D4956A', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/hair_ziaoxu.jpg',      imgPos:'18% center', overlayLight:true},
+  'Packages':  {key:'packages', cat:'Packages',          catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false}
+};
+
+var SERVICES = [];
+
+/* ── LOADING STATE ── */
+function showLoading(){
+  document.getElementById('cardsContainer').innerHTML='<div class="empty-state"><div class="em-icon" style="font-size:28px;animation:bob 1.5s ease-in-out infinite">✦</div><div class="em-text" style="font-size:16px;margin-top:12px">Loading services...</div></div>';
+  document.getElementById('pagination').style.display='none';
+  document.getElementById('resultsCount').textContent='Loading...';
+  document.getElementById('pageLabel').textContent='';
+}
+
+/* ── AIRTABLE FETCH (all pages via offset) ── */
+async function loadFromAirtable(){
+  showLoading();
+  var all=[], offset=null;
+  try {
+    do {
+      var url='https://api.airtable.com/v0/'+AT_BASE+'/'+AT_TABLE
+        +'?view='+AT_VIEW
+        +'&filterByFormula=AND({Active}=TRUE())'
+        +'&sort[0][field]=Sort%20Order&sort[0][direction]=asc'
+        +'&pageSize=100'
+        +(offset?'&offset='+offset:'');
+      var res=await fetch(url,{headers:{Authorization:'Bearer '+AT_TOKEN}});
+      if(!res.ok) throw new Error('Airtable error '+res.status);
+      var data=await res.json();
+      all=all.concat(data.records||[]);
+      offset=data.offset||null;
+    } while(offset);
+
+    SERVICES=all.map(function(r,i){
+      var f=r.fields;
+      var catKey=f['Category']||'Hair';
+      var cm=CAT_MAP[catKey]||CAT_MAP['Hair'];
+      var name=f['Service Name']||f['Name']||'Service';
+      var exp=f['Experience Detail']||'';
+      var parts=exp.split('|');
+      var brand=parts[0]?parts[0].trim():'';
+      var ritual=parts[1]?parts[1].trim():'';
+      var desc=f['AI Service Description']||ritual||'A premium salon experience crafted for you.';
+      var short=desc.length>100?desc.substring(0,97)+'...':desc;
+      var tier=f['Tier']||'Classic';
+      var sub=f['Subcategory']||'';
+      var waName=encodeURIComponent(name);
+      return {
+        id:i,
+        category:cm.key,
+        img:cm.img,
+        imgPos:cm.imgPos,
+        overlayLight:cm.overlayLight,
+        cat:cm.cat,
+        catColor:cm.catColor,
+        name:name,
+        short:short,
+        full:desc,
+        brand:brand+(tier?' · '+tier:''),
+        story:sub||catKey,
+        waText:'Hi%21%20I%27d%20like%20to%20book%3A%20'+waName
+      };
+    });
+
+    /* rebuild filter buttons with live counts */
+    buildFilters();
+    currentFilter='all'; currentPage=1; openCards={};
+    renderPage();
+
+  } catch(e){
+    console.error('Airtable load failed:',e);
+    document.getElementById('cardsContainer').innerHTML='<div class="empty-state"><div class="em-icon">⚠</div><div class="em-text">Could not load services. Please refresh.</div></div>';
+  }
+}
+
+/* ── BUILD FILTER BUTTONS FROM LIVE DATA ── */
+function buildFilters(){
+  var counts={all:SERVICES.length};
+  SERVICES.forEach(function(s){ counts[s.category]=(counts[s.category]||0)+1; });
+  var catLabels={all:'All Services',hair:'Hair',skin:'Skin',makeup:'Makeup',nails:'Nails',waxing:'Waxing',threading:'Threading',grooming:'Grooming',body:'Body',signature:'Signature',kids:'Kids',packages:'Packages'};
+  var bar=document.getElementById('filterBar');
+  bar.innerHTML='';
+  ['all','hair','skin','makeup','nails','waxing','threading','grooming','body','signature','kids','packages'].forEach(function(k){
+    if(k==='all'||counts[k]){
+      var btn=document.createElement('button');
+      btn.className='filter-btn'+(k==='all'?' active':'');
+      btn.textContent=(catLabels[k]||k)+(counts[k]?' ('+counts[k]+')':'');
+      btn.onclick=(function(kk,b){ return function(){ setFilter(kk,b); }; })(k,btn);
+      bar.appendChild(btn);
+    }
+  });
+}
 
 var PER_PAGE=5,currentFilter='all',currentPage=1,openCards={};
 function getFiltered(){return currentFilter==='all'?SERVICES:SERVICES.filter(s=>s.category===currentFilter);}
@@ -211,7 +300,8 @@ function renderPage(){
   document.getElementById('pgDots').innerHTML=d;
   document.getElementById('pagination').style.display=(tp<=1)?'none':'flex';
 }
-renderPage();
+/* start — load live data */
+loadFromAirtable();
 </script>
 </body>
-</html>
+</html> 

@@ -54,11 +54,18 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 
 /* ── FILTER TICKER (below filters) ── */
 .filter-ticker-wrap{width:100%;max-width:640px;margin-bottom:16px;overflow:hidden;}
-.filter-ticker-box{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.18);border-radius:10px;padding:12px 16px;min-height:58px;display:flex;align-items:center;justify-content:center;transition:opacity .4s ease;}
-.filter-ticker-box.hidden{opacity:0;pointer-events:none;}
-.filter-ticker-text{font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:rgba(250,247,242,0.82);line-height:1.5;text-align:center;animation:ftFade .8s ease;}
-.filter-ticker-text .ft-gold{color:#C9A84C;font-weight:600;}
-@keyframes ftFade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.filter-ticker-box{background:transparent;border:none;border-radius:0;padding:4px 8px 14px;min-height:auto;display:flex;align-items:center;justify-content:center;transition:opacity .4s ease;}
+.filter-ticker-box.hidden{opacity:0;pointer-events:none;display:none;}
+.filter-ticker-text{font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;font-weight:600;color:rgba(250,247,242,0.95);line-height:1.4;text-align:center;animation:flickFade 6s ease-in-out infinite;}
+.filter-ticker-text .ft-gold{color:#C9A84C;font-weight:700;}
+@media(max-width:380px){.filter-ticker-text{font-size:18px;}}
+
+/* ── PROMINENT HEADER FLICKER (category + subcategory pages) ── */
+.cat-flicker-wrap{width:100%;max-width:640px;margin:2px 0 22px;overflow:hidden;}
+.cat-flicker{font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;font-weight:600;line-height:1.4;text-align:center;color:rgba(250,247,242,0.95);padding:4px 8px;animation:flickFade 6s ease-in-out infinite;}
+.cat-flicker .ft-gold{color:#C9A84C;font-weight:700;}
+@keyframes flickFade{0%{opacity:0;transform:translateY(8px);}12%{opacity:1;transform:translateY(0);}80%{opacity:1;transform:translateY(0);}92%{opacity:0;transform:translateY(-8px);}100%{opacity:0;transform:translateY(8px);}}
+@media(max-width:380px){.cat-flicker{font-size:18px;}}
 
 /* ── DRILL-DOWN VIEWS ── */
 @keyframes fadeInUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
@@ -130,8 +137,16 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .card-brand{display:inline-block;max-height:0;overflow:hidden;opacity:0;transition:all .45s ease;margin-top:0;border-radius:5px;padding:0 9px;font-family:'Jost',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;border-width:1px;border-style:solid;}
 .card.open .card-brand{max-height:30px;opacity:1;margin-top:9px;padding:4px 9px;}
 .card-expand{position:absolute;bottom:11px;left:32%;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.3px;text-transform:uppercase;font-weight:700;transition:opacity .3s;}
-.book-btn{position:absolute;bottom:12px;right:16px;background:linear-gradient(135deg,#d4af37,#b89326);color:#fff;padding:9px 18px;border-radius:9px;font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;text-decoration:none;box-shadow:0 4px 18px rgba(180,140,30,0.5);z-index:10;white-space:nowrap;}
+.book-btn{position:absolute;bottom:12px;right:16px;background:linear-gradient(100deg,#b89326 38%,#f1d77a 50%,#b89326 62%);background-size:220% auto;color:#fff;padding:9px 18px;border-radius:9px;font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;text-decoration:none;box-shadow:0 4px 18px rgba(180,140,30,0.5);z-index:10;white-space:nowrap;animation:bookShimmer 5s linear infinite;transition:transform .25s ease,box-shadow .25s ease;}
+.book-btn:hover,.book-btn:active{transform:translateY(-2px) scale(1.04);box-shadow:0 8px 26px rgba(201,168,76,0.6),0 0 0 2px rgba(201,168,76,0.35);}
+@keyframes bookShimmer{0%{background-position:200% center;}100%{background-position:-200% center;}}
 .story-label{position:absolute;top:14px;left:14px;background:rgba(0,0,0,0.36);backdrop-filter:blur(8px);border-radius:6px;padding:3px 9px;font-family:'Cormorant Garamond',serif;font-size:10px;font-style:italic;color:rgba(255,255,255,0.82);}
+
+/* ── SUBCATEGORY BACK / NEXT ── */
+.sub-nav{width:100%;max-width:640px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;}
+.sub-nav-btn{flex-shrink:0;width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(201,168,76,0.32);background:rgba(201,168,76,0.06);color:#C9A84C;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s ease;-webkit-tap-highlight-color:transparent;}
+.sub-nav-btn:hover{background:#C9A84C;color:#0a0805;border-color:#C9A84C;box-shadow:0 4px 16px rgba(201,168,76,0.35);}
+.sub-nav-label{flex:1;text-align:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:rgba(250,247,242,0.7);}
 
 /* ── PAGINATION ── */
 .pagination{width:100%;max-width:640px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:28px;}
@@ -152,6 +167,7 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .empty-state{text-align:center;padding:50px 20px;color:rgba(201,168,76,0.35);}
 .empty-state .em-icon{font-size:36px;margin-bottom:12px;}
 .empty-state .em-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;}
+@media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
 </style>
 </head>
 <body>
@@ -171,14 +187,6 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
       <p class="hero-tagline">Start the Spark. Become the Flame.</p>
       <p class="hero-sub">Where precision meets transformation</p>
 
-      <!-- Hero ticker — inline, below tagline, never overlaps -->
-      <div class="hero-ticker">
-        <div class="hero-ticker-inner">
-          <div class="hero-ticker-msg" id="heroTickerMsg">
-            <span class="hero-ticker-accent">Hair is our canvas.</span> Every strand tells your story — we make it unforgettable.
-          </div>
-        </div>
-      </div>
       <a class="hero-cta" href="https://wa.me/919718831333?text=Hi%20Flare%20to%20Flame%2C%20I%27d%20like%20to%20book%20an%20appointment" target="_blank">
         <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         Book on WhatsApp
@@ -208,6 +216,7 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
       <span class="crumb-sep">›</span>
       <span class="crumb-here" id="crumbCat"></span>
     </div>
+    <div class="cat-flicker-wrap"><div class="cat-flicker" id="catFlicker"></div></div>
     <div class="sub-grid" id="subGrid"></div>
   </div>
 
@@ -226,6 +235,13 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
       <div class="filter-ticker-box hidden" id="filterTickerBox">
         <div class="filter-ticker-text" id="filterTickerText"></div>
       </div>
+    </div>
+
+    <!-- Subcategory Back / Next -->
+    <div class="sub-nav">
+      <button class="sub-nav-btn" id="subPrev" onclick="subNav(-1)" aria-label="Previous treatment">‹</button>
+      <span class="sub-nav-label" id="subNavLabel"></span>
+      <button class="sub-nav-btn" id="subNext" onclick="subNav(1)" aria-label="Next treatment">›</button>
     </div>
 
     <div class="results-row">
@@ -281,9 +297,10 @@ function getHeroMessages(cat) {
 }
 
 function rotateHeroTicker(cat) {
+  var el = document.getElementById('heroTickerMsg');
+  if (!el) return; // hero ticker removed — flicker now lives on category/subcategory headers
   var msgs = getHeroMessages(cat);
   heroTickerIndex = (heroTickerIndex + 1) % msgs.length;
-  var el = document.getElementById('heroTickerMsg');
   el.style.animation = 'none';
   el.offsetHeight; // reflow
   el.innerHTML = msgs[heroTickerIndex];
@@ -293,8 +310,9 @@ function rotateHeroTicker(cat) {
 function startHeroTicker(cat) {
   heroTickerCat = cat || 'all';
   heroTickerIndex = 0;
-  var msgs = getHeroMessages(heroTickerCat);
   var el = document.getElementById('heroTickerMsg');
+  if (!el) return; // hero ticker removed
+  var msgs = getHeroMessages(heroTickerCat);
   el.style.animation = 'none';
   el.offsetHeight;
   el.innerHTML = msgs[0];
@@ -321,30 +339,49 @@ function showFilterTicker(cat) {
   txt.style.animation = 'none';
   txt.offsetHeight;
   txt.innerHTML = msgs[0];
-  txt.style.animation = 'ftFade .8s ease';
+  txt.style.animation = 'flickFade 6s ease-in-out infinite';
   if (filterTickerTimer) clearInterval(filterTickerTimer);
   filterTickerTimer = setInterval(function() {
     filterTickerIndex = (filterTickerIndex + 1) % msgs.length;
     txt.style.animation = 'none';
     txt.offsetHeight;
     txt.innerHTML = msgs[filterTickerIndex];
-    txt.style.animation = 'ftFade .8s ease';
-  }, 5000);
+    txt.style.animation = 'flickFade 6s ease-in-out infinite';
+  }, 6000);
+}
+
+/* ── CATEGORY HEADER FLICKER (Stage 2 — subcategory page) ── */
+var catFlickerIndex = 0, catFlickerTimer = null;
+function showCatFlicker(cat) {
+  var el = document.getElementById('catFlicker');
+  if (!el) return;
+  var msgs = (CAT_TICKER[cat] || CAT_TICKER['all']).lines;
+  catFlickerIndex = 0;
+  el.style.animation = 'none'; el.offsetHeight;
+  el.innerHTML = msgs[0];
+  el.style.animation = 'flickFade 6s ease-in-out infinite';
+  if (catFlickerTimer) clearInterval(catFlickerTimer);
+  catFlickerTimer = setInterval(function() {
+    catFlickerIndex = (catFlickerIndex + 1) % msgs.length;
+    el.style.animation = 'none'; el.offsetHeight;
+    el.innerHTML = msgs[catFlickerIndex];
+    el.style.animation = 'flickFade 6s ease-in-out infinite';
+  }, 6000);
 }
 
 /* ── CATEGORY CONFIG ── */
+/* label = name shown on screen | key = internal group | Airtable Category value = the object KEY below */
 var CAT_MAP = {
-  'Hair':      {key:'hair',      cat:'Hair Therapy',         catColor:'#7a3ab0', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/hair_ziaoxu.jpg',      imgPos:'18% center', overlayLight:true},
-  'Skin':      {key:'skin',      cat:'Skin Ritual',          catColor:'#8a5020', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/skin_ykrobc.jpg',      imgPos:'22% center', overlayLight:true},
-  'Makeup':    {key:'makeup',    cat:'Bridal Couture',       catColor:'#9a1a4a', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/makeup_aqpzal.jpg',    imgPos:'12% center', overlayLight:true},
-  'Nails':     {key:'nails',     cat:'Nail Atelier',         catColor:'#0a6060', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/nails_fh8kny.jpg',     imgPos:'20% center', overlayLight:true},
-  'Waxing':    {key:'waxing',    cat:'Body Ritual',          catColor:'#7a5008', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/waxing_cq0iir.jpg',    imgPos:'18% center', overlayLight:true},
-  'Threading': {key:'threading', cat:'Precision Studio',     catColor:'#3a3a5a', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/threading_cmm20k.jpg', imgPos:'22% center', overlayLight:true},
-  'Grooming':  {key:'grooming',  cat:"Men's Grooming",       catColor:'#4682B4', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/grooming_qid5gs.jpg',  imgPos:'18% center', overlayLight:false},
-  'Signature': {key:'signature', cat:'Signature Experience', catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false},
-  'Body':      {key:'body',      cat:'Body Ritual',          catColor:'#4A7C59', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/waxing_cq0iir.jpg',    imgPos:'18% center', overlayLight:true},
-  'Kids':      {key:'kids',      cat:'Kids',                 catColor:'#D4956A', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/hair_ziaoxu.jpg',      imgPos:'18% center', overlayLight:true},
-  'Packages':  {key:'packages',  cat:'Packages',             catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false}
+  'Hair':      {key:'hair',      label:'Hair',      cat:'Hair Therapy',         catColor:'#7a3ab0', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/hair_ziaoxu.jpg',      imgPos:'18% center', overlayLight:true},
+  'Skin':      {key:'skin',      label:'Skin',      cat:'Skin Ritual',          catColor:'#8a5020', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/skin_ykrobc.jpg',      imgPos:'22% center', overlayLight:true},
+  'Makeup':    {key:'makeup',    label:'Makeup',    cat:'Bridal Couture',       catColor:'#9a1a4a', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/makeup_aqpzal.jpg',    imgPos:'12% center', overlayLight:true},
+  'Nail':      {key:'nails',     label:'Nails',     cat:'Nail Atelier',         catColor:'#0a6060', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/nails_fh8kny.jpg',     imgPos:'20% center', overlayLight:true},
+  'Waxing':    {key:'waxing',    label:'Waxing',    cat:'Body Ritual',          catColor:'#7a5008', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/waxing_cq0iir.jpg',    imgPos:'18% center', overlayLight:true},
+  'Threading': {key:'threading', label:'Threading', cat:'Precision Studio',     catColor:'#3a3a5a', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/threading_cmm20k.jpg', imgPos:'22% center', overlayLight:true},
+  'Grooming':  {key:'grooming',  label:'Grooming',  cat:"Men's Grooming",       catColor:'#4682B4', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/grooming_qid5gs.jpg',  imgPos:'18% center', overlayLight:false},
+  'Signature': {key:'signature', label:'Signature & Packages', cat:'Signature Experience', catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false},
+  /* Packages merged into Signature: same key, same box. Both Airtable categories now land together. */
+  'Packages':  {key:'signature', label:'Signature & Packages', cat:'Signature Experience', catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false}
 };
 
 /* ── SAFE FIELD READER ── */
@@ -409,7 +446,7 @@ async function loadFromAirtable() {
 var PER_PAGE = 5, currentPage = 1, openCards = {};
 var activeCat = '', activeSub = '';
 
-var CAT_ORDER = ['Hair','Skin','Makeup','Nails','Waxing','Threading','Grooming','Body','Signature','Kids','Packages'];
+var CAT_ORDER = ['Hair','Skin','Makeup','Nail','Waxing','Threading','Grooming','Signature'];
 
 function catCount(catName) {
   var cm = CAT_MAP[catName]; if (!cm) return 0;
@@ -427,11 +464,11 @@ function renderCatBoxes() {
     box.className = 'cat-box fade-in';
     box.onclick = (function(c){ return function(){ openCat(c); }; })(catName);
     box.innerHTML =
-      '<img src="' + cm.img + '" alt="' + catName + '">' +
+      '<img src="' + cm.img + '" alt="' + cm.label + '">' +
       '<div class="cat-box-veil"></div>' +
       '<div class="cat-box-edge"></div>' +
       '<div class="cat-box-label">' +
-        '<div class="cat-box-name">' + catName + '</div>' +
+        '<div class="cat-box-name">' + cm.label + '</div>' +
         '<div class="cat-box-tag" style="color:' + cm.catColor + '">' + cm.cat + '</div>' +
       '</div>';
     grid.appendChild(box);
@@ -439,11 +476,13 @@ function renderCatBoxes() {
 }
 
 /* STAGE 2 — subcategory boxes */
+var currentSubs = [];
 function openCat(catName) {
   activeCat = catName;
   var cm = CAT_MAP[catName];
-  document.getElementById('crumbCat').textContent = catName;
+  document.getElementById('crumbCat').textContent = cm.label;
   document.getElementById('secHint').textContent = 'Choose a treatment';
+  showCatFlicker(cm.key);
 
   // collect subcategories within this category
   var key = cm.key;
@@ -453,6 +492,7 @@ function openCat(catName) {
     var sub = s.story || 'General';
     if (subs.indexOf(sub) === -1) subs.push(sub);
   });
+  currentSubs = subs;
 
   var grid = document.getElementById('subGrid');
   grid.innerHTML = '';
@@ -475,13 +515,33 @@ function openSub(sub) {
   activeSub = sub;
   currentPage = 1; openCards = {};
   var cm = CAT_MAP[activeCat];
-  document.getElementById('crumbCatBack').textContent = activeCat;
+  document.getElementById('crumbCatBack').textContent = cm.label;
   document.getElementById('crumbSub').textContent = sub;
   document.getElementById('secHint').textContent = 'Tap any service to explore';
   showFilterTicker(cm.key);
   startHeroTicker(cm.key);
+  updateSubNav();
   showStage('stageCards');
   renderPage();
+}
+
+/* cycle between subcategories of the same category (← Back / Next →) */
+function subNav(dir) {
+  if (!currentSubs.length) return;
+  var i = currentSubs.indexOf(activeSub);
+  if (i === -1) i = 0;
+  i = (i + dir + currentSubs.length) % currentSubs.length;
+  openSub(currentSubs[i]);
+}
+function updateSubNav() {
+  var prev = document.getElementById('subPrev');
+  var next = document.getElementById('subNext');
+  var lbl  = document.getElementById('subNavLabel');
+  if (!prev) return;
+  var single = currentSubs.length <= 1;
+  prev.style.visibility = single ? 'hidden' : 'visible';
+  next.style.visibility = single ? 'hidden' : 'visible';
+  if (lbl) lbl.textContent = activeSub;
 }
 
 function showStage(id) {

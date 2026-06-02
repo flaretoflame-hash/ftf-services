@@ -155,7 +155,7 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 var AT_BASE = 'appK1bKgelTKXQKkR';
 var AT_TABLE = 'tblUOhjX6QJLakc4n';
 var AT_VIEW  = 'viwyiNkhJpT0mnqUH';
-var AT_TOKEN = 'patZvD3oRwgvrDzot.3a5d0f5969782d91dbea82b09609507c98316e2d1fd396e6c798661cd9cbcad9';
+
 
 /* ── CATEGORY CONFIG ── */
 var CAT_MAP = {
@@ -187,19 +187,10 @@ async function loadFromAirtable(){
   showLoading();
   var all=[], offset=null;
   try {
-    do {
-      var url='https://api.airtable.com/v0/'+AT_BASE+'/'+AT_TABLE
-        +'?view='+AT_VIEW
-        +'&filterByFormula=AND({Active}=TRUE())'
-        +'&sort[0][field]=Sort%20Order&sort[0][direction]=asc'
-        +'&pageSize=100'
-        +(offset?'&offset='+offset:'');
-      var res=await fetch(url,{headers:{Authorization:'Bearer '+AT_TOKEN}});
-      if(!res.ok) throw new Error('Airtable error '+res.status);
+    var res=await fetch('https://ftf-airtable.flaretoflame.workers.dev');
+      if(!res.ok) throw new Error('Worker error '+res.status);
       var data=await res.json();
-      all=all.concat(data.records||[]);
-      offset=data.offset||null;
-    } while(offset);
+      all=data.records||[];
 
     SERVICES=all.map(function(r,i){
       var f=r.fields;

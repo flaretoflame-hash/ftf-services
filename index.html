@@ -176,6 +176,13 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .f-staff-btn:hover{border-color:#C9A84C;color:#C9A84C;}
 .f-copy{font-size:9px;letter-spacing:1px;color:rgba(250,247,242,0.25);}
 
+/* ── GOLD FOOTER BUTTONS (visibility upgrade) ── */
+.f-social a{border-color:#C9A84C;background:rgba(201,168,76,0.12);box-shadow:0 3px 12px rgba(201,168,76,0.2);}
+.f-social a:hover{background:#C9A84C;transform:translateY(-2px);box-shadow:0 6px 18px rgba(201,168,76,0.4);}
+.f-social a:hover svg{fill:#0a0805;}
+.f-staff-btn{background:linear-gradient(100deg,#b89326 38%,#f1d77a 50%,#b89326 62%);background-size:220% auto;color:#fff;border:none;font-weight:700;box-shadow:0 4px 16px rgba(180,140,30,0.4);animation:bookShimmer 5s linear infinite;}
+.f-staff-btn:hover{color:#fff;transform:translateY(-2px) scale(1.03);box-shadow:0 7px 22px rgba(201,168,76,0.5);}
+
 .wa-fab{position:fixed;bottom:22px;right:18px;z-index:100;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(37,211,102,0.45);text-decoration:none;transition:transform .2s ease,box-shadow .2s ease;}
 .wa-fab:hover{transform:scale(1.08);box-shadow:0 8px 32px rgba(37,211,102,0.55);}
 .wa-fab svg{width:27px;height:27px;fill:#fff;}
@@ -183,6 +190,39 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .empty-state{text-align:center;padding:50px 20px;color:rgba(201,168,76,0.35);}
 .empty-state .em-icon{font-size:36px;margin-bottom:12px;}
 .empty-state .em-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;}
+
+/* ── FEEDBACK FORM ── */
+.fb-overlay{position:fixed;inset:0;z-index:200;background:rgba(6,4,2,0.82);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;}
+.fb-overlay.open{display:flex;}
+.fb-card{position:relative;width:100%;max-width:440px;background:linear-gradient(160deg,#14100a,#0a0805);border:1px solid rgba(201,168,76,0.28);border-radius:22px;padding:34px 26px 30px;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:fbIn .5s cubic-bezier(0.16,1,0.3,1);}
+@keyframes fbIn{from{opacity:0;transform:translateY(24px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.fb-close{position:absolute;top:16px;right:18px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,168,76,0.3);background:transparent;color:#C9A84C;font-size:18px;cursor:pointer;line-height:1;transition:all .2s;}
+.fb-close:hover{background:rgba(201,168,76,0.12);}
+.fb-eyebrow{font-family:'Jost',sans-serif;font-size:9px;letter-spacing:4px;color:#C9A84C;text-transform:uppercase;font-weight:600;text-align:center;}
+.fb-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#FAF7F2;text-align:center;margin:6px 0 4px;letter-spacing:-0.5px;}
+.fb-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:rgba(201,168,76,0.85);text-align:center;margin-bottom:24px;}
+.fb-field{margin-bottom:18px;}
+.fb-label{display:block;font-family:'Jost',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:rgba(250,247,242,0.55);margin-bottom:8px;}
+.fb-input,.fb-textarea,.fb-select{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.2);border-radius:11px;padding:13px 15px;font-family:'Jost',sans-serif;font-size:14px;color:#FAF7F2;transition:border-color .25s,background .25s;-webkit-appearance:none;appearance:none;}
+.fb-input:focus,.fb-textarea:focus,.fb-select:focus{outline:none;border-color:#C9A84C;background:rgba(201,168,76,0.06);}
+.fb-textarea{resize:vertical;min-height:64px;line-height:1.5;}
+.fb-select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23C9A84C' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 15px center;}
+.fb-select option{background:#14100a;color:#FAF7F2;}
+.fb-stars{display:flex;gap:8px;justify-content:center;padding:4px 0;}
+.fb-star{font-size:34px;line-height:1;cursor:pointer;color:rgba(201,168,76,0.25);transition:transform .15s,color .2s;-webkit-tap-highlight-color:transparent;}
+.fb-star:hover{transform:scale(1.15);}
+.fb-star.lit{color:#C9A84C;text-shadow:0 0 14px rgba(201,168,76,0.55);}
+.fb-toggle{display:flex;gap:10px;}
+.fb-toggle-btn{flex:1;text-align:center;padding:12px;border-radius:11px;border:1.5px solid rgba(201,168,76,0.22);background:rgba(201,168,76,0.05);color:rgba(250,247,242,0.6);font-family:'Jost',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all .25s;-webkit-tap-highlight-color:transparent;}
+.fb-toggle-btn.sel{background:#C9A84C;color:#0a0805;border-color:#C9A84C;box-shadow:0 4px 16px rgba(201,168,76,0.35);}
+.fb-submit{width:100%;margin-top:8px;background:linear-gradient(100deg,#b89326 38%,#f1d77a 50%,#b89326 62%);background-size:220% auto;color:#fff;padding:15px;border:none;border-radius:12px;font-family:'Jost',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 22px rgba(180,140,30,0.45);animation:bookShimmer 5s linear infinite;transition:transform .25s;}
+.fb-submit:hover:not(:disabled){transform:translateY(-2px) scale(1.02);}
+.fb-submit:disabled{opacity:0.4;cursor:not-allowed;animation:none;}
+.fb-msg{text-align:center;padding:30px 10px;}
+.fb-msg-icon{font-size:40px;color:#C9A84C;margin-bottom:12px;}
+.fb-msg-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px;color:#FAF7F2;line-height:1.4;}
+.fb-error{font-family:'Jost',sans-serif;font-size:12px;color:#e08a8a;text-align:center;margin-top:10px;min-height:16px;}
+
 @media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
 </style>
 </head>
@@ -285,6 +325,7 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
       <a onclick="goToCats();window.scrollTo({top:0,behavior:'smooth'});">Home</a>
       <a onclick="document.querySelector('.section').scrollIntoView({behavior:'smooth'});">Services</a>
       <a href="https://wa.me/919718831333" target="_blank">Book</a>
+      <a onclick="openFeedback()">Feedback</a>
     </div>
     <div class="f-col">
       <h4>Connect</h4>
@@ -310,6 +351,67 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 <a class="wa-fab" href="https://wa.me/919718831333" target="_blank" aria-label="Chat on WhatsApp">
   <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
+
+<!-- ── FEEDBACK FORM ── -->
+<div class="fb-overlay" id="fbOverlay">
+  <div class="fb-card">
+    <button class="fb-close" onclick="closeFeedback()" aria-label="Close">✕</button>
+    <div id="fbForm">
+      <div class="fb-eyebrow">Your Voice</div>
+      <div class="fb-title">Share Your Experience</div>
+      <div class="fb-sub">Because details define you</div>
+
+      <div class="fb-field">
+        <label class="fb-label">Your Name</label>
+        <input class="fb-input" id="fbName" type="text" placeholder="Enter your name">
+      </div>
+
+      <div class="fb-field">
+        <label class="fb-label">Your Rating</label>
+        <div class="fb-stars" id="fbStars">
+          <span class="fb-star" data-v="1">★</span>
+          <span class="fb-star" data-v="2">★</span>
+          <span class="fb-star" data-v="3">★</span>
+          <span class="fb-star" data-v="4">★</span>
+          <span class="fb-star" data-v="5">★</span>
+        </div>
+      </div>
+
+      <div class="fb-field">
+        <label class="fb-label">Who Served You?</label>
+        <select class="fb-select" id="fbStaff"><option value="">Select (optional)</option></select>
+      </div>
+
+      <div class="fb-field">
+        <label class="fb-label">What Did You Love?</label>
+        <textarea class="fb-textarea" id="fbLove" placeholder="Tell us what made it special"></textarea>
+      </div>
+
+      <div class="fb-field">
+        <label class="fb-label">What Can We Improve?</label>
+        <textarea class="fb-textarea" id="fbImprove" placeholder="Help us serve you better"></textarea>
+      </div>
+
+      <div class="fb-field">
+        <label class="fb-label">Would You Recommend Us?</label>
+        <div class="fb-toggle">
+          <div class="fb-toggle-btn" id="fbRecYes" onclick="setRecommend('Yes')">Yes</div>
+          <div class="fb-toggle-btn" id="fbRecNo" onclick="setRecommend('No')">No</div>
+        </div>
+      </div>
+
+      <button class="fb-submit" id="fbSubmit" onclick="submitFeedback()" disabled>Send Feedback →</button>
+      <div class="fb-error" id="fbError"></div>
+    </div>
+
+    <div id="fbThanks" style="display:none;">
+      <div class="fb-msg">
+        <div class="fb-msg-icon">✦</div>
+        <div class="fb-msg-text">Thank you.<br>Your words help us grow.</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ── WORKER ── */
@@ -682,6 +784,85 @@ function renderPage() {
   }
   document.getElementById('pgDots').innerHTML = d;
   document.getElementById('pagination').style.display = (tp <= 1) ? 'none' : 'flex';
+}
+
+/* ── FEEDBACK FORM ── */
+var fbRating = 0, fbRecommend = '', fbStaffLoaded = false;
+
+function openFeedback() {
+  document.getElementById('fbOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (!fbStaffLoaded) loadStaffOptions();
+}
+function closeFeedback() {
+  document.getElementById('fbOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function loadStaffOptions() {
+  try {
+    var res = await fetch(WORKER_URL + '/staff');
+    var data = await res.json();
+    var sel = document.getElementById('fbStaff');
+    (data.staff || []).forEach(function(st){
+      if (!st.name || st.name === 'Staff') return;
+      var o = document.createElement('option');
+      o.value = st.id; o.textContent = st.name;
+      sel.appendChild(o);
+    });
+    fbStaffLoaded = true;
+  } catch (e) { /* dropdown stays optional if staff load fails */ }
+}
+
+document.getElementById('fbStars').addEventListener('click', function(e){
+  if (!e.target.dataset.v) return;
+  fbRating = parseInt(e.target.dataset.v, 10);
+  var stars = this.querySelectorAll('.fb-star');
+  stars.forEach(function(s){
+    s.classList.toggle('lit', parseInt(s.dataset.v,10) <= fbRating);
+  });
+  checkFbReady();
+});
+
+function setRecommend(v) {
+  fbRecommend = v;
+  document.getElementById('fbRecYes').classList.toggle('sel', v === 'Yes');
+  document.getElementById('fbRecNo').classList.toggle('sel', v === 'No');
+}
+
+function checkFbReady() {
+  document.getElementById('fbSubmit').disabled = (fbRating < 1);
+}
+
+async function submitFeedback() {
+  var btn = document.getElementById('fbSubmit');
+  var err = document.getElementById('fbError');
+  err.textContent = '';
+  btn.disabled = true; btn.textContent = 'Sending...';
+
+  var payload = {
+    name: document.getElementById('fbName').value.trim(),
+    rating: fbRating,
+    staffId: document.getElementById('fbStaff').value,
+    love: document.getElementById('fbLove').value.trim(),
+    improve: document.getElementById('fbImprove').value.trim(),
+    recommend: fbRecommend
+  };
+
+  try {
+    var res = await fetch(WORKER_URL + '/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+    if (!res.ok || !data.ok) throw new Error('save failed');
+    document.getElementById('fbForm').style.display = 'none';
+    document.getElementById('fbThanks').style.display = 'block';
+  } catch (e) {
+    err.textContent = 'Could not send. Please try again.';
+    btn.disabled = false; btn.textContent = 'Send Feedback →';
+  }
 }
 
 loadFromAirtable();

@@ -378,6 +378,17 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
       </div>
 
       <div class="fb-field">
+        <label class="fb-label">Cleanliness &amp; Hygiene</label>
+        <div class="fb-stars" id="fbHygiene">
+          <span class="fb-star" data-h="1">★</span>
+          <span class="fb-star" data-h="2">★</span>
+          <span class="fb-star" data-h="3">★</span>
+          <span class="fb-star" data-h="4">★</span>
+          <span class="fb-star" data-h="5">★</span>
+        </div>
+      </div>
+
+      <div class="fb-field">
         <label class="fb-label">Who Served You?</label>
         <select class="fb-select" id="fbStaff"><option value="">Select (optional)</option></select>
       </div>
@@ -787,7 +798,7 @@ function renderPage() {
 }
 
 /* ── FEEDBACK FORM ── */
-var fbRating = 0, fbRecommend = '', fbStaffLoaded = false;
+var fbRating = 0, fbHygiene = 0, fbRecommend = '', fbStaffLoaded = false;
 
 function openFeedback() {
   document.getElementById('fbOverlay').classList.add('open');
@@ -824,6 +835,15 @@ document.getElementById('fbStars').addEventListener('click', function(e){
   checkFbReady();
 });
 
+document.getElementById('fbHygiene').addEventListener('click', function(e){
+  if (!e.target.dataset.h) return;
+  fbHygiene = parseInt(e.target.dataset.h, 10);
+  var stars = this.querySelectorAll('.fb-star');
+  stars.forEach(function(s){
+    s.classList.toggle('lit', parseInt(s.dataset.h,10) <= fbHygiene);
+  });
+});
+
 function setRecommend(v) {
   fbRecommend = v;
   document.getElementById('fbRecYes').classList.toggle('sel', v === 'Yes');
@@ -843,6 +863,7 @@ async function submitFeedback() {
   var payload = {
     name: document.getElementById('fbName').value.trim(),
     rating: fbRating,
+    hygiene: fbHygiene,
     staffId: document.getElementById('fbStaff').value,
     love: document.getElementById('fbLove').value.trim(),
     improve: document.getElementById('fbImprove').value.trim(),

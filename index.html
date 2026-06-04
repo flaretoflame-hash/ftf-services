@@ -31,12 +31,51 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .hero-eyebrow{font-size:9px;letter-spacing:5px;color:#C9A84C;text-transform:uppercase;font-weight:600;margin-bottom:10px;opacity:0.85;}
 .hero-name{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:700;color:#FAF7F2;line-height:0.98;letter-spacing:-1.2px;margin-bottom:10px;text-shadow:0 2px 30px rgba(0,0,0,0.6);}
 .hero-tagline{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:rgba(201,168,76,0.92);margin-bottom:6px;line-height:1.35;text-shadow:0 2px 16px rgba(0,0,0,0.6);}
-.hero-sub{font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2.5px;color:rgba(250,247,242,0.45);text-transform:uppercase;font-weight:400;margin-bottom:28px;}
+.hero-sub{font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2.5px;color:rgba(250,247,242,0.45);text-transform:uppercase;font-weight:400;margin-bottom:20px;}
 .hero-cta{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#d4af37,#b89326);color:#fff;padding:14px 28px;border-radius:13px;font-family:'Jost',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-decoration:none;box-shadow:0 8px 30px rgba(180,140,30,0.45);transition:transform .2s ease;align-self:flex-start;}
 .hero-cta:hover{transform:translateY(-2px);}
 .hero-cta svg{width:18px;height:18px;fill:#fff;}
 .scroll-hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:4;font-size:8px;letter-spacing:2px;color:rgba(250,247,242,0.35);text-transform:uppercase;animation:bob 2s ease-in-out infinite;}
 @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(5px);}}
+
+/* ── HERO OFFER BAND (merged from offers-preview, restyled to dark app fonts) ── */
+.offer-flash{
+  position:relative;align-self:flex-start;width:100%;max-width:340px;
+  margin:0 0 22px;text-align:center;padding:15px 20px;border-radius:16px;
+  background:linear-gradient(135deg, rgba(34,24,14,0.62), rgba(20,14,8,0.7));
+  cursor:pointer;overflow:hidden;
+  animation:offerBreath 5.5s ease-in-out infinite;
+  -webkit-tap-highlight-color:transparent;
+  transition:padding .5s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes offerBreath{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+.offer-flash::after{content:'';position:absolute;inset:0;border-radius:16px;padding:1.5px;
+  background:linear-gradient(120deg,#8a6f28,#C9A84C,#f0dca0,#C9A84C,#8a6f28);
+  background-size:300% 300%;
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:borderTravel 4s linear infinite;pointer-events:none;}
+@keyframes borderTravel{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
+.offer-flash::before{content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(100deg,transparent 32%,rgba(240,220,160,0.18) 50%,transparent 68%);
+  background-size:220% 100%;animation:offerSheen 6s ease-in-out infinite;pointer-events:none;}
+@keyframes offerSheen{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.offer-flash-eyebrow{font-family:'Jost',sans-serif;font-size:9px;letter-spacing:0.34em;text-transform:uppercase;font-weight:700;color:#E8C96A;margin-bottom:6px;position:relative;z-index:2;text-shadow:0 1px 6px rgba(0,0,0,0.4);}
+.offer-flash-text{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:700;line-height:1.16;position:relative;z-index:2;
+  background:linear-gradient(92deg,#8a6c22 0%,#caa84e 35%,#f2dea2 50%,#caa84e 65%,#8a6c22 100%);
+  background-size:200% auto;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,0.55));animation:offerGlow 7s ease-in-out infinite;}
+@keyframes offerGlow{0%{opacity:0.7;background-position:0% center;}20%{opacity:1;}50%{opacity:1;background-position:100% center;}80%{opacity:1;}100%{opacity:0.7;background-position:0% center;}}
+.offer-flash-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;font-weight:600;color:rgba(248,240,225,0.92);margin-top:5px;position:relative;z-index:2;text-shadow:0 1px 6px rgba(0,0,0,0.5);}
+.offer-flash-more{max-height:0;opacity:0;overflow:hidden;position:relative;z-index:2;transition:max-height .55s cubic-bezier(0.16,1,0.3,1),opacity .4s ease,margin .4s ease;}
+.offer-flash.open .offer-flash-more{max-height:120px;opacity:1;margin-top:12px;}
+.offer-flash-cta{display:inline-block;font-family:'Jost',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.05em;color:#2C2C2C;background:linear-gradient(135deg,#f0dca0,#C9A84C);border-radius:10px;padding:10px 22px;text-decoration:none;box-shadow:0 4px 16px rgba(201,168,76,0.4);}
+.offer-flash-hint{display:block;margin-top:9px;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(232,201,106,0.7);position:relative;z-index:2;font-weight:600;}
+.offer-flash.open{animation:none;transform:scale(1.04);}
+.offer-flash.open::after{animation:none;background-position:50% 50%;}
+.offer-flash.open .offer-flash-text{animation:none;opacity:1;}
+.offer-flash.hidden{display:none;}
 
 /* ── HERO TICKER (inline, below tagline) ── */
 .hero-ticker{margin:18px 0 4px;max-width:340px;}
@@ -222,6 +261,38 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .fb-msg-icon{font-size:40px;color:#C9A84C;margin-bottom:12px;}
 .fb-msg-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px;color:#FAF7F2;line-height:1.4;}
 .fb-error{font-family:'Jost',sans-serif;font-size:12px;color:#e08a8a;text-align:center;margin-top:10px;min-height:16px;}
+/* ── feedback → promise bridge button ── */
+.fb-promise-link{width:100%;margin-top:12px;background:transparent;border:1.5px solid rgba(201,168,76,0.4);color:#C9A84C;padding:13px;border-radius:12px;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .25s;}
+.fb-promise-link:hover{background:rgba(201,168,76,0.1);border-color:#C9A84C;}
+
+/* ── PROMISE SCREEN (overlay, dark) ── */
+.pr-overlay{position:fixed;inset:0;z-index:210;background:rgba(6,4,2,0.92);backdrop-filter:blur(8px);display:none;overflow-y:auto;}
+.pr-overlay.open{display:block;}
+.pr-amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.pr-amb::before{content:'';position:absolute;right:-90px;top:40px;width:340px;height:540px;background:radial-gradient(ellipse at 55% 35%,rgba(201,168,76,0.12) 0%,transparent 70%);filter:blur(60px);animation:drift 17s ease-in-out infinite alternate;}
+.pr-amb::after{content:'';position:absolute;left:-70px;bottom:50px;width:300px;height:440px;background:radial-gradient(ellipse at 40% 60%,rgba(130,55,175,0.10) 0%,transparent 72%);filter:blur(60px);animation:drift2 17s ease-in-out infinite alternate;}
+.pr-wrap{position:relative;z-index:1;max-width:440px;margin:0 auto;padding:46px 22px 60px;}
+.pr-close{position:absolute;top:16px;right:18px;z-index:5;width:34px;height:34px;border-radius:50%;border:1px solid rgba(201,168,76,0.35);background:rgba(10,8,5,0.6);color:#C9A84C;font-size:18px;cursor:pointer;line-height:1;transition:all .2s;}
+.pr-close:hover{background:rgba(201,168,76,0.15);}
+.pr-eyebrow{font-family:'Jost',sans-serif;font-size:11px;letter-spacing:0.28em;color:#C9A84C;text-transform:uppercase;font-weight:600;text-align:center;margin-bottom:12px;}
+.pr-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:#FAF7F2;text-align:center;line-height:1.05;letter-spacing:-0.3px;margin-bottom:10px;}
+.pr-subtitle{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:rgba(201,168,76,0.9);text-align:center;line-height:1.5;margin-bottom:32px;}
+.pr-promise{display:flex;gap:16px;align-items:flex-start;background:rgba(255,255,255,0.035);border:1px solid rgba(201,168,76,0.18);border-radius:16px;padding:20px 18px;margin-bottom:13px;box-shadow:0 2px 16px rgba(0,0,0,0.3);border-left:3px solid #C9A84C;transition:transform .3s ease,box-shadow .3s ease;}
+.pr-promise:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(201,168,76,0.12);}
+.pr-promise-icon{flex-shrink:0;width:46px;height:46px;border-radius:12px;background:linear-gradient(140deg,rgba(201,168,76,0.18),rgba(201,168,76,0.05));border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-size:20px;color:#C9A84C;}
+.pr-promise-body{flex:1;min-width:0;}
+.pr-promise-title{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700;color:#FAF7F2;line-height:1.12;margin-bottom:5px;}
+.pr-promise-desc{font-family:'Jost',sans-serif;font-size:13px;font-weight:300;color:rgba(250,247,242,0.7);line-height:1.55;}
+.pr-closing{background:rgba(255,255,255,0.035);border:1px solid rgba(201,168,76,0.26);border-radius:16px;padding:32px 24px;text-align:center;margin-top:24px;box-shadow:0 2px 16px rgba(0,0,0,0.3);}
+.pr-closing-mark{font-size:24px;color:#C9A84C;margin-bottom:12px;}
+.pr-closing-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px;color:#FAF7F2;line-height:1.5;}
+.pr-closing-sign{font-family:'Jost',sans-serif;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#C9A84C;font-weight:600;margin-top:20px;}
+.pr-cta-wa{display:flex;align-items:center;justify-content:center;gap:9px;background:#C9A84C;color:#0a0805;padding:15px;border-radius:12px;font-family:'Jost',sans-serif;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 18px rgba(201,168,76,0.3);margin-top:26px;transition:transform .25s,box-shadow .25s;}
+.pr-cta-wa:hover{transform:translateY(-2px);box-shadow:0 7px 24px rgba(201,168,76,0.4);}
+.pr-cta-wa svg{width:21px;height:21px;fill:#0a0805;}
+.pr-nav-row{display:flex;justify-content:center;margin-top:16px;}
+.pr-nav-back{display:inline-flex;align-items:center;gap:6px;background:transparent;border:none;color:rgba(201,168,76,0.78);padding:10px 16px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:color .25s;}
+.pr-nav-back:hover{color:#C9A84C;}
 
 @media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
 </style>
@@ -242,6 +313,17 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
       <h1 class="hero-name">Flare to<br>Flame</h1>
       <p class="hero-tagline">Start the Spark. Become the Flame.</p>
       <p class="hero-sub">Where precision meets transformation</p>
+
+      <!-- OFFER BAND (auto-shows when an Airtable offer is live) -->
+      <div class="offer-flash hidden" id="offerFlash" onclick="openOffer()">
+        <div class="offer-flash-eyebrow">Now On</div>
+        <div class="offer-flash-text" id="offerText"></div>
+        <div class="offer-flash-sub" id="offerSub"></div>
+        <div class="offer-flash-more">
+          <a class="offer-flash-cta" id="offerCta" href="#" target="_blank" onclick="event.stopPropagation()">Claim on WhatsApp</a>
+        </div>
+        <span class="offer-flash-hint" id="offerHint">Tap to view</span>
+      </div>
 
       <a class="hero-cta" href="https://wa.me/919718831333?text=Hi%20Flare%20to%20Flame%2C%20I%27d%20like%20to%20book%20an%20appointment" target="_blank">
         <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -328,7 +410,8 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
       <a onclick="openFeedback()">Feedback</a>
     </div>
     <div class="f-col">
-      <h4>Connect</h4>
+      <h4>About Us</h4>
+      <a onclick="openPromise()">Our Promise</a>
       <a href="https://wa.me/919718831333" target="_blank">WhatsApp</a>
       <a href="https://instagram.com/" target="_blank">Instagram</a>
     </div>
@@ -420,6 +503,69 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
         <div class="fb-msg-icon">✦</div>
         <div class="fb-msg-text">Thank you.<br>Your words help us grow.</div>
       </div>
+      <!-- feedback → promise bridge (flow "5c") -->
+      <button class="fb-promise-link" onclick="closeFeedback();openPromise();">Read Our Promise to You →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── OUR PROMISE SCREEN (dark, converted from promise.html) ── -->
+<div class="pr-overlay" id="prOverlay">
+  <button class="pr-close" onclick="closePromise()" aria-label="Close">✕</button>
+  <div class="pr-amb"></div>
+  <div class="pr-wrap">
+    <div class="pr-eyebrow">Our Promise</div>
+    <h1 class="pr-title">With You,<br>Every Time</h1>
+    <p class="pr-subtitle">This is more than a salon &mdash;<br>it is a trust we keep with you.</p>
+
+    <div class="pr-promise">
+      <div class="pr-promise-icon">&#10022;</div>
+      <div class="pr-promise-body">
+        <div class="pr-promise-title">Spotless, Always</div>
+        <div class="pr-promise-desc">Every tool sanitised, every corner hygienic. Your safety is never compromised.</div>
+      </div>
+    </div>
+    <div class="pr-promise">
+      <div class="pr-promise-icon">&#10022;</div>
+      <div class="pr-promise-body">
+        <div class="pr-promise-title">Genuine Products</div>
+        <div class="pr-promise-desc">Only authentic, premium brands. What you see is exactly what we use on you.</div>
+      </div>
+    </div>
+    <div class="pr-promise">
+      <div class="pr-promise-icon">&#10022;</div>
+      <div class="pr-promise-body">
+        <div class="pr-promise-title">Your Time, Respected</div>
+        <div class="pr-promise-desc">A booking means a booking. We do not keep you waiting.</div>
+      </div>
+    </div>
+    <div class="pr-promise">
+      <div class="pr-promise-icon">&#10022;</div>
+      <div class="pr-promise-body">
+        <div class="pr-promise-title">Honest Advice</div>
+        <div class="pr-promise-desc">We recommend what is right for you &mdash; never what simply sells more.</div>
+      </div>
+    </div>
+    <div class="pr-promise">
+      <div class="pr-promise-icon">&#10022;</div>
+      <div class="pr-promise-body">
+        <div class="pr-promise-title">Your Voice Comes First</div>
+        <div class="pr-promise-desc">Your feedback is our greatest guide. We listen, and we improve.</div>
+      </div>
+    </div>
+
+    <div class="pr-closing">
+      <div class="pr-closing-mark">&#10022;</div>
+      <div class="pr-closing-text">"You arrive as our guest,<br>and leave as the finest version of yourself."</div>
+      <div class="pr-closing-sign">&mdash; Flare to Flame</div>
+    </div>
+
+    <a class="pr-cta-wa" href="https://wa.me/919718831333?text=Hi%20Flare%20to%20Flame%2C%20I%27d%20like%20to%20book%20an%20appointment" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Book Your Next Visit
+    </a>
+    <div class="pr-nav-row">
+      <button class="pr-nav-back" onclick="closePromise()">&lsaquo; Back to App</button>
     </div>
   </div>
 </div>
@@ -455,11 +601,11 @@ function getHeroMessages(cat) {
 
 function rotateHeroTicker(cat) {
   var el = document.getElementById('heroTickerMsg');
-  if (!el) return; // hero ticker removed — flicker now lives on category/subcategory headers
+  if (!el) return;
   var msgs = getHeroMessages(cat);
   heroTickerIndex = (heroTickerIndex + 1) % msgs.length;
   el.style.animation = 'none';
-  el.offsetHeight; // reflow
+  el.offsetHeight;
   el.innerHTML = msgs[heroTickerIndex];
   el.style.animation = 'tickerFade 6s ease-in-out infinite';
 }
@@ -468,7 +614,7 @@ function startHeroTicker(cat) {
   heroTickerCat = cat || 'all';
   heroTickerIndex = 0;
   var el = document.getElementById('heroTickerMsg');
-  if (!el) return; // hero ticker removed
+  if (!el) return;
   var msgs = getHeroMessages(heroTickerCat);
   el.style.animation = 'none';
   el.offsetHeight;
@@ -507,7 +653,7 @@ function showFilterTicker(cat) {
   }, 6000);
 }
 
-/* ── CATEGORY HEADER FLICKER (Stage 2 — subcategory page) ── */
+/* ── CATEGORY HEADER FLICKER (Stage 2) ── */
 var catFlickerIndex = 0, catFlickerTimer = null;
 function showCatFlicker(cat) {
   var el = document.getElementById('catFlicker');
@@ -527,7 +673,6 @@ function showCatFlicker(cat) {
 }
 
 /* ── CATEGORY CONFIG ── */
-/* label = name shown on screen | key = internal group | Airtable Category value = the object KEY below */
 var CAT_MAP = {
   'Hair':      {key:'hair',      label:'Hair',      cat:'Hair Therapy',         catColor:'#7a3ab0', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/hair_ziaoxu.jpg',      imgPos:'18% center', overlayLight:true},
   'Skin':      {key:'skin',      label:'Skin',      cat:'Skin Ritual',          catColor:'#8a5020', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/skin_ykrobc.jpg',      imgPos:'22% center', overlayLight:true},
@@ -537,7 +682,6 @@ var CAT_MAP = {
   'Threading': {key:'threading', label:'Threading', cat:'Precision Studio',     catColor:'#3a3a5a', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/threading_cmm20k.jpg', imgPos:'22% center', overlayLight:true},
   'Grooming':  {key:'grooming',  label:'Grooming',  cat:"Men's Grooming",       catColor:'#4682B4', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/grooming_qid5gs.jpg',  imgPos:'18% center', overlayLight:false},
   'Signature': {key:'signature', label:'Signature & Packages', cat:'Signature Experience', catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false},
-  /* Packages merged into Signature: same key, same box. Both Airtable categories now land together. */
   'Packages':  {key:'signature', label:'Signature & Packages', cat:'Signature Experience', catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false}
 };
 
@@ -551,12 +695,10 @@ function fv(field) {
 var SERVICES = [];
 
 function mapRecords(all) {
-  // DEBUG: log the exact field names Airtable returns (check browser console)
   if (all && all[0] && all[0].fields) {
     console.log('AIRTABLE FIELD NAMES →', Object.keys(all[0].fields));
     console.log('FIRST RECORD →', all[0].fields);
   }
-
   return all.map(function(r, i) {
     var f = r.fields;
     var catKey = fv(f['Category']) || 'Hair';
@@ -610,7 +752,6 @@ function catCount(catName) {
   return SERVICES.filter(function(s){ return s.category === cm.key; }).length;
 }
 
-/* STAGE 1 — category boxes */
 function renderCatBoxes() {
   var grid = document.getElementById('catGrid');
   grid.innerHTML = '';
@@ -632,7 +773,6 @@ function renderCatBoxes() {
   });
 }
 
-/* STAGE 2 — subcategory boxes */
 var currentSubs = [];
 function openCat(catName) {
   activeCat = catName;
@@ -641,7 +781,6 @@ function openCat(catName) {
   document.getElementById('secHint').textContent = 'Choose a treatment';
   showCatFlicker(cm.key);
 
-  // collect subcategories within this category
   var key = cm.key;
   var subs = [];
   SERVICES.forEach(function(s){
@@ -667,7 +806,6 @@ function openCat(catName) {
   showStage('stageSubs');
 }
 
-/* STAGE 3 — service cards */
 function openSub(sub) {
   activeSub = sub;
   currentPage = 1; openCards = {};
@@ -682,7 +820,6 @@ function openSub(sub) {
   renderPage();
 }
 
-/* cycle between subcategories of the same category (← Back / Next →) */
 function subNav(dir) {
   if (!currentSubs.length) return;
   var i = currentSubs.indexOf(activeSub);
@@ -797,6 +934,110 @@ function renderPage() {
   document.getElementById('pagination').style.display = (tp <= 1) ? 'none' : 'flex';
 }
 
+/* ── OFFERS (Airtable-wired) ───────────────────────────────
+   Shows the offer band only when:
+     Active = true  AND  Visible To Clients = true  AND  today is within Valid From..Valid To
+   Test offer: if Valid From/To are blank but Active+Visible are true, it still shows (so the Grand Opening test offer works now).
+   Fields: Offer Title, Description, Discount Value, Valid From, Valid To, Active, Visible To Clients, Festival Tag
+------------------------------------------------------------- */
+var WA = 'https://wa.me/919718831333?text=';
+
+function parseDate(s) {
+  if (!s) return null;
+  var d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function offerIsLive(o) {
+  if (o.active !== true) return false;
+  if (o.visible !== true) return false;
+  var today = new Date(); today.setHours(0,0,0,0);
+  var from = parseDate(o.from);
+  var to   = parseDate(o.to);
+  // No dates set yet (e.g. test offer) → treat as live while Active+Visible
+  if (!from && !to) return true;
+  if (from && today < from) return false;
+  if (to) { var toEnd = new Date(to); toEnd.setHours(23,59,59,999); if (today > toEnd) return false; }
+  return true;
+}
+
+function mapOffer(r) {
+  var f = r.fields || {};
+  return {
+    title:   fv(f['Offer Title']),
+    desc:    fv(f['Description']),
+    discount:fv(f['Discount Value']),
+    from:    fv(f['Valid From']),
+    to:      fv(f['Valid To']),
+    active:  (f['Active'] === true),
+    visible: (f['Visible To Clients'] === true),
+    tag:     fv(f['Festival Tag'])
+  };
+}
+
+function showOfferBand(o) {
+  var flash = document.getElementById('offerFlash');
+  if (!o) { flash.classList.add('hidden'); return; }
+  document.getElementById('offerText').textContent = o.title || 'Special Offer';
+  document.getElementById('offerSub').textContent  = o.desc || '';
+  document.getElementById('offerCta').href = WA + encodeURIComponent('I want to claim: ' + (o.title || 'your current offer'));
+  flash.classList.remove('hidden');
+}
+
+async function loadOffers() {
+  var flash = document.getElementById('offerFlash');
+  try {
+    var res = await fetch(WORKER_URL + '/offers');
+    if (!res.ok) throw new Error('offers ' + res.status);
+    var data = await res.json();
+    var rows = (data.records || data.offers || []).map(mapOffer);
+    var live = rows.filter(offerIsLive);
+    // Earliest-ending live offer wins the hero slot
+    live.sort(function(a,b){
+      var ta = parseDate(a.to), tb = parseDate(b.to);
+      if (ta && tb) return ta - tb;
+      if (ta) return -1; if (tb) return 1; return 0;
+    });
+    showOfferBand(live[0] || null);
+  } catch (e) {
+    console.error('Offers load failed:', e.message);
+    flash.classList.add('hidden'); // fail safe: no band rather than a broken one
+  }
+}
+
+/* tap-expand / auto-fade */
+var offerOpen=false, offerTimer=null;
+function openOffer(){
+  var flash=document.getElementById('offerFlash');
+  var hint=document.getElementById('offerHint');
+  offerOpen=!offerOpen;
+  if(offerOpen){
+    flash.classList.add('open');
+    hint.textContent='Tap to close';
+    clearTimeout(offerTimer);
+    offerTimer=setTimeout(function(){ closeOffer(); }, 6000);
+  } else { closeOffer(); }
+}
+function closeOffer(){
+  var flash=document.getElementById('offerFlash');
+  var hint=document.getElementById('offerHint');
+  flash.classList.remove('open');
+  hint.textContent='Tap to view';
+  offerOpen=false;
+  clearTimeout(offerTimer);
+}
+
+/* ── PROMISE SCREEN ── */
+function openPromise(){
+  document.getElementById('prOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  document.getElementById('prOverlay').scrollTop = 0;
+}
+function closePromise(){
+  document.getElementById('prOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
 /* ── FEEDBACK FORM ── */
 var fbRating = 0, fbHygiene = 0, fbRecommend = '', fbStaffLoaded = false;
 
@@ -887,6 +1128,7 @@ async function submitFeedback() {
 }
 
 loadFromAirtable();
+loadOffers();
 </script>
 </body>
 </html>

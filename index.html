@@ -942,22 +942,36 @@ function renderPage() {
 ------------------------------------------------------------- */
 var WA = 'https://wa.me/919718831333?text=';
 
-function parseDate(s) {
+// Turn an Airtable date ("2026-06-04" or full ISO) into a plain YYYY-MM-DD number
+// like 20260604, so we compare calendar days only — no time, no timezone drift.
+function dayNumber(s) {
   if (!s) return null;
-  var d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
+  var str = String(s);
+  var m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) {
+    var d = new Date(str);
+    if (isNaN(d.getTime())) return null;
+    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  }
+  return parseInt(m[1], 10) * 10000 + parseInt(m[2], 10) * 100 + parseInt(m[3], 10);
+}
+
+function todayNumber() {
+  var n = new Date();
+  return n.getFullYear() * 10000 + (n.getMonth() + 1) * 100 + n.getDate();
 }
 
 function offerIsLive(o) {
   if (o.active !== true) return false;
   if (o.visible !== true) return false;
-  var today = new Date(); today.setHours(0,0,0,0);
-  var from = parseDate(o.from);
-  var to   = parseDate(o.to);
+  var today = todayNumber();
+  var from = dayNumber(o.from);
+  var to   = dayNumber(o.to);
   // No dates set yet (e.g. test offer) → treat as live while Active+Visible
   if (!from && !to) return true;
+  // Inclusive on both ends: live on the start day and the end day themselves.
   if (from && today < from) return false;
-  if (to) { var toEnd = new Date(to); toEnd.setHours(23,59,59,999); if (today > toEnd) return false; }
+  if (to && today > to) return false;
   return true;
 }
 
@@ -994,7 +1008,7 @@ async function loadOffers() {
     var live = rows.filter(offerIsLive);
     // Earliest-ending live offer wins the hero slot
     live.sort(function(a,b){
-      var ta = parseDate(a.to), tb = parseDate(b.to);
+      var ta = dayNumber(a.to), tb = dayNumber(b.to);
       if (ta && tb) return ta - tb;
       if (ta) return -1; if (tb) return 1; return 0;
     });

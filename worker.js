@@ -1,20 +1,25 @@
 /* ============================================================
-   FLARE TO FLAME — Cloudflare Worker
+   FLARE TO FLAME — Cloudflare Worker  (v3 — 11 Jun 2026)
    EXISTING (untouched):
    GET  /              → reads Services table
    GET  /staff         → reads Staff table (name + id only)
    GET  /offers        → reads Offers table
    POST /feedback      → writes one row to Feedback table
 
-   NEW:
+   LOGIN (v2):
    POST /staff-lookup  → find staff by phone (login step 1)
-   POST /send-otp      → generate 4-digit OTP, store in KV (10 min), send via WhatsApp
-   POST /verify-otp    → check OTP against KV
+   POST /send-otp      → generate 4-digit OTP, store in KV (10 min)
+   POST /verify-otp    → check OTP; on success issues SESSION TOKEN (12h)
    GET  /team          → public team list (name, role, photo)
-   GET  /staff-status  → who is Available right now
+                         [FIXED v3: field is "Profile Photo" not "Photo"]
+   GET  /staff-status  → who is available right now
+                         [CHANGED v3: reads "Availability" field]
+
+   NEW (v3):
+   POST /set-availability → staff sets own availability (token required)
 
    Token stored as SECRET (env.AIRTABLE_TOKEN), never in the app.
-   OTP stored in KV binding: env.OTP_KV
+   OTP + sessions stored in KV binding: env.OTP_KV
    ============================================================ */
 
 const BASE_ID = 'appK1bKgelTKXQKkR';
@@ -25,9 +30,16 @@ const OFFERS_TABLE = 'Offers';
 
 const ALLOWED_ORIGIN = '*';
 
-// OTP settings (Buddy's choice: 4-digit, 10-minute expiry)
+// OTP settings (4-digit, 10-minute expiry)
 const OTP_LENGTH = 4;
 const OTP_TTL_SECONDS = 600; // 10 minutes
+
+// Session settings (issued after OTP verify)
+const SESSION_TTL_SECONDS = 43200; // 12 hours = one work day
+
+// The only values /set-availability accepts (must match Airtable
+// "Availability" single-select options exactly)
+const ALLOWED_AVAILABILITY = ['उपलब्ध', 'ब्रेक पर', 'आज छुट्टी'];
 
 function cors() {
   return {
@@ -44,9 +56,18 @@ function json(body, status = 200) {
   });
 }
 
-// Normalize a phone to digits only (e.g. "+91 97188 31333" -> "919718831333")
+// Normalize a phone to digits only ("+91 97188 31333" -> "919718831333")
 function normalizePhone(p) {
   return String(p || '').replace(/[^0-9]/g, '');
+}
+
+// Compare two phones by their LAST 10 DIGITS.
+// Staff can type "9718831333" even if Airtable stores "919718831333".
+function samePhone(a, b) {
+  const da = normalizePhone(a);
+  const db = normalizePhone(b);
+  if (da.length < 10 || db.length < 10) return false;
+  return da.slice(-10) === db.slice(-10);
 }
 
 // Make a numeric OTP of OTP_LENGTH digits
@@ -54,6 +75,17 @@ function makeOtp() {
   let s = '';
   for (let i = 0; i < OTP_LENGTH; i++) {
     s += Math.floor(Math.random() * 10);
+  }
+  return s;
+}
+
+// Make a random session token (32 hex chars, crypto-secure)
+function makeToken() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) {
+    s += bytes[i].toString(16).padStart(2, '0');
   }
   return s;
 }
@@ -153,30 +185,27 @@ export default {
       }
 
       // ====================================================
-      // NEW ROUTES
+      // LOGIN ROUTES
       // ====================================================
 
       // ---- 5. STAFF LOOKUP (login step 1) ----
       // POST /staff-lookup  body: { phone: "919718831333" }
-      // returns { found: true, id, name } if a staff member has that phone
       if (request.method === 'POST' && url.pathname === '/staff-lookup') {
         const body = await request.json();
-        const phone = normalizePhone(body.phone);
+        const phone = normalizePhone(body.phone).slice(-10);
 
         if (!phone) {
           return json({ found: false, error: 'No phone provided' }, 400);
         }
 
-        // Pull staff with Name + Phone, then match in code (robust to format)
         const r = await fetch(
           `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Phone&pageSize=100`,
           { headers: authHeader }
         );
         const data = await r.json();
-        const match = (data.records || []).find(rec => {
-          const recPhone = normalizePhone(rec.fields && rec.fields.Phone);
-          return recPhone && recPhone === phone;
-        });
+        const match = (data.records || []).find(rec =>
+          samePhone(rec.fields && rec.fields.Phone, phone)
+        );
 
         if (!match) {
           return json({ found: false });
@@ -190,10 +219,9 @@ export default {
 
       // ---- 6. SEND OTP ----
       // POST /send-otp  body: { phone: "919718831333" }
-      // generates 4-digit OTP, stores in KV for 10 min, sends via WhatsApp (Composio)
       if (request.method === 'POST' && url.pathname === '/send-otp') {
         const body = await request.json();
-        const phone = normalizePhone(body.phone);
+        const phone = normalizePhone(body.phone).slice(-10);
 
         if (!phone) {
           return json({ ok: false, error: 'No phone provided' }, 400);
@@ -206,7 +234,7 @@ export default {
         );
         const data = await r.json();
         const isStaff = (data.records || []).some(rec =>
-          normalizePhone(rec.fields && rec.fields.Phone) === phone
+          samePhone(rec.fields && rec.fields.Phone, phone)
         );
         if (!isStaff) {
           return json({ ok: false, error: 'Phone not registered' }, 404);
@@ -218,19 +246,17 @@ export default {
         await env.OTP_KV.put('otp:' + phone, otp, { expirationTtl: OTP_TTL_SECONDS });
 
         // ----------------------------------------------------
-        // TODO: COMPOSIO WHATSAPP SEND — NOT WIRED YET
-        // When Composio is ready, replace this block with the
-        // real call. Needs: env.COMPOSIO_KEY (set as a secret)
-        // and the WhatsApp send endpoint/action.
-        // Message text suggestion:
+        // COMPOSIO WHATSAPP SEND
+        // Flip composioWired to true when Composio is ready.
+        // devOtp turns OFF automatically in the same step —
+        // no separate "remove before launch" job.
+        // Message text:
         //   `Your Flare to Flame login code is ${otp}. Valid 10 minutes.`
         // ----------------------------------------------------
-        const composioWired = false; // flip to true after wiring
+        const composioWired = false; // SINGLE SWITCH: true = real send ON, devOtp OFF
 
         if (!composioWired) {
-          // Placeholder mode: OTP is stored but not sent.
-          // Returns the OTP in the response SO YOU CAN TEST.
-          // REMOVE devOtp before going live with real sending.
+          // Testing mode only. devOtp dies automatically when composioWired = true.
           return json({
             ok: true,
             sent: false,
@@ -239,15 +265,16 @@ export default {
           });
         }
 
-        // (Real send goes here once composioWired = true)
+        // (Real Composio send goes here once composioWired = true)
         return json({ ok: true, sent: true });
       }
 
-      // ---- 7. VERIFY OTP ----
+      // ---- 7. VERIFY OTP → ISSUE SESSION TOKEN ----
       // POST /verify-otp  body: { phone: "919718831333", otp: "1234" }
+      // On success returns { ok, verified, id, name, sessionToken }
       if (request.method === 'POST' && url.pathname === '/verify-otp') {
         const body = await request.json();
-        const phone = normalizePhone(body.phone);
+        const phone = normalizePhone(body.phone).slice(-10);
         const otp = String(body.otp || '').trim();
 
         if (!phone || !otp) {
@@ -265,37 +292,50 @@ export default {
         // Correct — delete so it can't be reused
         await env.OTP_KV.delete('otp:' + phone);
 
-        // Return the staff record for the session
+        // Find the staff record
         const r = await fetch(
           `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Phone&pageSize=100`,
           { headers: authHeader }
         );
         const data = await r.json();
         const match = (data.records || []).find(rec =>
-          normalizePhone(rec.fields && rec.fields.Phone) === phone
+          samePhone(rec.fields && rec.fields.Phone, phone)
         );
+
+        if (!match) {
+          return json({ ok: false, error: 'Staff record not found' }, 404);
+        }
+
+        // Issue session token (12h), stored in KV → value = staff record id
+        const sessionToken = makeToken();
+        await env.OTP_KV.put('sess:' + sessionToken, match.id, {
+          expirationTtl: SESSION_TTL_SECONDS,
+        });
 
         return json({
           ok: true,
           verified: true,
-          id: match ? match.id : null,
-          name: (match && match.fields && match.fields.Name) ? match.fields.Name : 'Staff',
+          id: match.id,
+          name: (match.fields && match.fields.Name) ? match.fields.Name : 'Staff',
+          sessionToken: sessionToken,
         });
       }
 
       // ---- 8. TEAM (public team page) ----
       // GET /team  → name, role, photo for each staff member
+      // v3 FIX: photo field in Airtable is "Profile Photo", not "Photo"
       if (request.method === 'GET' && url.pathname === '/team') {
         const r = await fetch(
-          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Role&fields%5B%5D=Photo&pageSize=100`,
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Role&fields%5B%5D=Profile%20Photo&pageSize=100`,
           { headers: authHeader }
         );
         const data = await r.json();
         const team = (data.records || []).map(rec => {
           const f = rec.fields || {};
           let photo = '';
-          if (f.Photo && f.Photo.length > 0 && f.Photo[0].url) {
-            photo = f.Photo[0].url;
+          const photos = f['Profile Photo'];
+          if (photos && photos.length > 0 && photos[0].url) {
+            photo = photos[0].url;
           }
           return {
             id: rec.id,
@@ -308,25 +348,70 @@ export default {
       }
 
       // ---- 9. STAFF STATUS (who is available) ----
-      // GET /staff-status  → name + available for each staff member
-      // "available" = true when Staff Status field === "Active"
+      // GET /staff-status
+      // v3: "available" = employed (Staff Status = Active)
+      //     AND self-set Availability = "उपलब्ध"
       if (request.method === 'GET' && url.pathname === '/staff-status') {
         const r = await fetch(
-          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Staff%20Status&pageSize=100`,
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Staff%20Status&fields%5B%5D=Availability&pageSize=100`,
           { headers: authHeader }
         );
         const data = await r.json();
         const status = (data.records || []).map(rec => {
           const f = rec.fields || {};
           const staffStatus = f['Staff Status'] || '';
+          const availability = f['Availability'] || '';
           return {
             id: rec.id,
             name: f.Name || 'Staff',
             staffStatus: staffStatus,
-            available: staffStatus === 'Active',
+            availability: availability,
+            available: staffStatus === 'Active' && availability === 'उपलब्ध',
           };
         });
         return json({ status });
+      }
+
+      // ---- 10. SET AVAILABILITY (token required) ----
+      // POST /set-availability
+      // body: { sessionToken: "...", availability: "उपलब्ध" | "ब्रेक पर" | "आज छुट्टी" }
+      // Staff can ONLY change their own record (id comes from the token).
+      if (request.method === 'POST' && url.pathname === '/set-availability') {
+        const body = await request.json();
+        const sessionToken = String(body.sessionToken || '').trim();
+        const availability = String(body.availability || '').trim();
+
+        if (!sessionToken) {
+          return json({ ok: false, error: 'Session token required' }, 401);
+        }
+        if (ALLOWED_AVAILABILITY.indexOf(availability) === -1) {
+          return json({ ok: false, error: 'Invalid availability value' }, 400);
+        }
+
+        // Validate token → get staff record id
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) {
+          return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+        }
+
+        // Update ONLY the Availability field of the staff's own record
+        const r = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}/${staffId}`,
+          {
+            method: 'PATCH',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fields: { 'Availability': availability },
+              typecast: true,
+            }),
+          }
+        );
+        const result = await r.json();
+        if (!r.ok) {
+          return json({ ok: false, error: result }, 400);
+        }
+
+        return json({ ok: true, availability: availability });
       }
 
       return new Response('Not found', { status: 404, headers: cors() });

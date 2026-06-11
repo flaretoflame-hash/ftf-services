@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Flare to Flame — स्टाफ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Tiro+Devanagari+Hindi:ital@0;1&family=Mukta:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #0a0805;
+  --gold: #C9A84C;
+  --offwhite: #FAF7F2;
+  --card: rgba(250, 247, 242, 0.04);
+  --card-border: rgba(201, 168, 76, 0.22);
+  --muted: rgba(250, 247, 242, 0.55);
+  --green: #6FBF73;
+  --amber: #D9A441;
+  --red: #C96B5A;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at 50% -10%, rgba(201,168,76,0.10) 0%, rgba(10,8,5,0) 55%);
+  color: var(--offwhite);
+  font-family: 'Mukta', sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.wrap { max-width: 440px; margin: 0 auto; padding: 28px 20px 60px; }
+
+/* ---------- Brand header ---------- */
+.brand { text-align: center; margin-bottom: 8px; }
+.brand h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  color: var(--offwhite);
+}
+.brand h1 span { color: var(--gold); }
+.brand .sub {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.gold-line {
+  width: 56px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 18px auto 28px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 24px 20px;
+  margin-bottom: 18px;
+  backdrop-filter: blur(6px);
+  animation: breathe 17s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { border-color: rgba(201,168,76,0.22); }
+  50% { border-color: rgba(201,168,76,0.40); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
+}
+
+.card h2 {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-family: 'Tiro Devanagari Hindi', serif;
+}
+
+input {
+  width: 100%;
+  background: rgba(250,247,242,0.06);
+  border: 1px solid rgba(201,168,76,0.30);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--offwhite);
+  font-family: 'Mukta', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+input:focus { border-color: var(--gold); }
+input::placeholder { color: rgba(250,247,242,0.3); }
+
+.otp-input { text-align: center; font-size: 26px; letter-spacing: 0.5em; }
+
+.btn {
+  width: 100%;
+  margin-top: 16px;
+  background: var(--gold);
+  color: #181203;
+  border: none;
+  border-radius: 12px;
+  padding: 15px;
+  font-family: 'Mukta', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .2s, transform .1s;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1.5px solid rgba(201,168,76,0.5);
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.msg { margin-top: 12px; font-size: 14px; line-height: 1.5; font-family: 'Tiro Devanagari Hindi', serif; }
+.msg.err { color: var(--red); }
+.msg.ok  { color: var(--green); }
+.msg.dev { color: var(--amber); }
+
+/* ---------- Dashboard ---------- */
+.hello {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 24px;
+  text-align: center;
+}
+.hello b { color: var(--gold); font-weight: 400; }
+.hello-sub { text-align: center; color: var(--muted); font-size: 13px; margin-top: 4px; font-family: 'Tiro Devanagari Hindi', serif; }
+
+/* availability buttons */
+.avail-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 6px; }
+.avail-btn {
+  border: 1px solid rgba(250,247,242,0.18);
+  background: rgba(250,247,242,0.04);
+  color: var(--offwhite);
+  border-radius: 14px;
+  padding: 16px 6px 13px;
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 15px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .2s, background .2s;
+}
+.avail-btn .dot {
+  display: block; width: 10px; height: 10px;
+  border-radius: 50%; margin: 0 auto 8px;
+  background: rgba(250,247,242,0.25);
+}
+.avail-btn[data-v="उपलब्ध"] .dot   { background: var(--green); }
+.avail-btn[data-v="ब्रेक पर"] .dot  { background: var(--amber); }
+.avail-btn[data-v="आज छुट्टी"] .dot { background: var(--red); }
+.avail-btn.sel {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.12);
+}
+
+/* team / status lists */
+.row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(250,247,242,0.07);
+}
+.row:last-child { border-bottom: none; }
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+  border: 1px solid rgba(201,168,76,0.35);
+  background: rgba(201,168,76,0.10);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px; color: var(--gold);
+}
+.row .info { flex: 1; min-width: 0; }
+.row .nm { font-size: 16px; font-weight: 500; }
+.row .rl { font-size: 13px; color: var(--muted); }
+.pill {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 12.5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(250,247,242,0.18);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.pill.g { color: var(--green); border-color: rgba(111,191,115,0.45); }
+.pill.a { color: var(--amber); border-color: rgba(217,164,65,0.45); }
+.pill.r { color: var(--red);  border-color: rgba(201,107,90,0.45); }
+
+.skeleton {
+  height: 56px; border-radius: 12px;
+  background: linear-gradient(90deg, rgba(250,247,242,0.04) 25%, rgba(250,247,242,0.09) 50%, rgba(250,247,242,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  margin-bottom: 10px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.empty { color: var(--muted); font-size: 14px; text-align: center; padding: 14px 0; font-family: 'Tiro Devanagari Hindi', serif; }
+
+.logout {
+  display: block; margin: 8px auto 0;
+  background: none; border: none;
+  color: var(--muted); font-size: 14px;
+  font-family: 'Tiro Devanagari Hindi', serif;
+  cursor: pointer; text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <h1>Flare <span>to</span> Flame</h1>
+    <div class="sub">स्टाफ ऐप</div>
+  </div>
+  <div class="gold-line"></div>
+
+  <!-- ================= SCREEN 1: PHONE ================= -->
+  <div id="scrPhone" class="card">
+    <h2>लॉगिन करें</h2>
+    <label for="phone">अपना 10 अंकों का फ़ोन नंबर डालें</label>
+    <input id="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" maxlength="12">
+    <button class="btn" id="btnSend">कोड भेजें</button>
+    <div class="msg" id="msgPhone"></div>
+  </div>
+
+  <!-- ================= SCREEN 2: OTP ================= -->
+  <div id="scrOtp" class="card hidden">
+    <h2>कोड डालें</h2>
+    <label for="otp">WhatsApp पर भेजा गया 4 अंकों का कोड डालें</label>
+    <input id="otp" class="otp-input" type="tel" inputmode="numeric" placeholder="••••" maxlength="4">
+    <button class="btn" id="btnVerify">लॉगिन करें</button>
+    <button class="btn btn-ghost" id="btnBack">वापस जाएँ</button>
+    <div class="msg" id="msgOtp"></div>
+  </div>
+
+  <!-- ================= SCREEN 3: DASHBOARD ================= -->
+  <div id="scrDash" class="hidden">
+
+    <div class="card">
+      <div class="hello">नमस्ते, <b id="staffName"></b> 🙏</div>
+      <div class="hello-sub">आज का दिन शुभ हो</div>
+    </div>
+
+    <div class="card">
+      <h2>आज आपकी स्थिति</h2>
+      <div class="avail-row" id="availRow">
+        <button class="avail-btn" data-v="उपलब्ध"><span class="dot"></span>उपलब्ध</button>
+        <button class="avail-btn" data-v="ब्रेक पर"><span class="dot"></span>ब्रेक पर</button>
+        <button class="avail-btn" data-v="आज छुट्टी"><span class="dot"></span>आज छुट्टी</button>
+      </div>
+      <div class="msg" id="msgAvail"></div>
+    </div>
+
+    <div class="card">
+      <h2>हमारी टीम</h2>
+      <div id="teamList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>अभी कौन उपलब्ध है</h2>
+      <div id="statusList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </div>
+
+    <button class="logout" id="btnLogout">लॉग आउट करें</button>
+  </div>
+
+</div>
+
+<script>
+const API = 'https://ftf-airtable.flaretoflame.workers.dev';
+
+const $ = id => document.getElementById(id);
+const show = id => $(id).classList.remove('hidden');
+const hide = id => $(id).classList.add('hidden');
+
+let currentPhone = '';
+
+function setMsg(id, text, cls) {
+  const el = $(id);
+  el.textContent = text || '';
+  el.className = 'msg' + (cls ? ' ' + cls : '');
+}
+
+function normalizePhone(p) { return String(p || '').replace(/[^0-9]/g, ''); }
+
+/* ---------------- SESSION RESTORE ---------------- */
+const savedToken = sessionStorage.getItem('ftf_token');
+const savedName = sessionStorage.getItem('ftf_name');
+if (savedToken && savedName) {
+  openDashboard(savedName);
+}
+
+/* ---------------- STEP 1: SEND OTP ---------------- */
+$('btnSend').addEventListener('click', async () => {
+  const phone = normalizePhone($('phone').value).slice(-10);
+  if (phone.length !== 10) {
+    setMsg('msgPhone', '10 अंकों का सही नंबर डालें', 'err');
+    return;
+  }
+  $('btnSend').disabled = true;
+  setMsg('msgPhone', 'जाँच हो रही है…');
+
+  try {
+    // lookup first — friendly error if not registered
+    const lr = await fetch(API + '/staff-lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const lookup = await lr.json();
+    if (!lookup.found) {
+      setMsg('msgPhone', 'यह नंबर रजिस्टर नहीं है। मालिक से संपर्क करें।', 'err');
+      $('btnSend').disabled = false;
+      return;
+    }
+
+    const sr = await fetch(API + '/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const sent = await sr.json();
+    if (!sent.ok) {
+      setMsg('msgPhone', 'कोड भेजने में दिक्कत हुई। फिर कोशिश करें।', 'err');
+      $('btnSend').disabled = false;
+      return;
+    }
+
+    currentPhone = phone;
+    hide('scrPhone'); show('scrOtp');
+    $('otp').value = ''; $('otp').focus();
+
+    if (sent.devOtp) {
+      // testing mode only — disappears automatically when Composio is wired
+      setMsg('msgOtp', 'टेस्टिंग कोड: ' + sent.devOtp, 'dev');
+    } else {
+      setMsg('msgOtp', 'कोड WhatsApp पर भेज दिया गया है', 'ok');
+    }
+  } catch (e) {
+    setMsg('msgPhone', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
+  }
+  $('btnSend').disabled = false;
+});
+
+/* ---------------- STEP 2: VERIFY OTP ---------------- */
+$('btnVerify').addEventListener('click', async () => {
+  const otp = $('otp').value.trim();
+  if (otp.length !== 4) {
+    setMsg('msgOtp', '4 अंकों का कोड डालें', 'err');
+    return;
+  }
+  $('btnVerify').disabled = true;
+  setMsg('msgOtp', 'जाँच हो रही है…');
+
+  try {
+    const r = await fetch(API + '/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: currentPhone, otp })
+    });
+    const res = await r.json();
+    if (!res.ok || !res.verified) {
+      setMsg('msgOtp', res.error === 'Incorrect code'
+        ? 'कोड गलत है। फिर से डालें।'
+        : 'कोड की समय-सीमा खत्म हो गई। वापस जाकर नया कोड लें।', 'err');
+      $('btnVerify').disabled = false;
+      return;
+    }
+
+    sessionStorage.setItem('ftf_token', res.sessionToken);
+    sessionStorage.setItem('ftf_name', res.name);
+    sessionStorage.setItem('ftf_id', res.id);
+    openDashboard(res.name);
+  } catch (e) {
+    setMsg('msgOtp', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
+  }
+  $('btnVerify').disabled = false;
+});
+
+$('btnBack').addEventListener('click', () => {
+  hide('scrOtp'); show('scrPhone');
+  setMsg('msgPhone', ''); setMsg('msgOtp', '');
+});
+
+/* ---------------- DASHBOARD ---------------- */
+function openDashboard(name) {
+  hide('scrPhone'); hide('scrOtp'); show('scrDash');
+  $('staffName').textContent = name;
+  loadTeam();
+  loadStatus();
+}
+
+/* availability buttons */
+document.querySelectorAll('.avail-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const value = btn.dataset.v;
+    const token = sessionStorage.getItem('ftf_token');
+    if (!token) { logout(); return; }
+
+    document.querySelectorAll('.avail-btn').forEach(b => b.disabled = true);
+    setMsg('msgAvail', 'सेव हो रहा है…');
+
+    try {
+      const r = await fetch(API + '/set-availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionToken: token, availability: value })
+      });
+      const res = await r.json();
+      if (res.ok) {
+        document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('sel'));
+        btn.classList.add('sel');
+        setMsg('msgAvail', 'आपकी स्थिति सेव हो गई ✓', 'ok');
+        loadStatus();
+      } else if (r.status === 401) {
+        setMsg('msgAvail', 'सेशन खत्म हो गया। दोबारा लॉगिन करें।', 'err');
+        setTimeout(logout, 1500);
+      } else {
+        setMsg('msgAvail', 'सेव नहीं हुआ। फिर कोशिश करें।', 'err');
+      }
+    } catch (e) {
+      setMsg('msgAvail', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
+    }
+    document.querySelectorAll('.avail-btn').forEach(b => b.disabled = false);
+  });
+});
+
+/* team list */
+async function loadTeam() {
+  try {
+    const r = await fetch(API + '/team');
+    const data = await r.json();
+    const list = $('teamList');
+    list.innerHTML = '';
+    if (!data.team || data.team.length === 0) {
+      list.innerHTML = '<div class="empty">अभी टीम की जानकारी नहीं है</div>';
+      return;
+    }
+    data.team.forEach(m => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const av = m.photo
+        ? '<img class="avatar" src="' + m.photo + '" alt="">'
+        : '<div class="avatar">' + (m.name ? m.name[0] : '?') + '</div>';
+      row.innerHTML = av +
+        '<div class="info"><div class="nm">' + m.name + '</div>' +
+        '<div class="rl">' + (m.role || '') + '</div></div>';
+      list.appendChild(row);
+    });
+  } catch (e) {
+    $('teamList').innerHTML = '<div class="empty">जानकारी लोड नहीं हुई</div>';
+  }
+}
+
+/* status list */
+async function loadStatus() {
+  try {
+    const r = await fetch(API + '/staff-status');
+    const data = await r.json();
+    const list = $('statusList');
+    list.innerHTML = '';
+    if (!data.status || data.status.length === 0) {
+      list.innerHTML = '<div class="empty">अभी कोई जानकारी नहीं है</div>';
+      return;
+    }
+    const myId = sessionStorage.getItem('ftf_id');
+    data.status.forEach(s => {
+      if (s.staffStatus !== 'Active') return; // only employed staff
+      const row = document.createElement('div');
+      row.className = 'row';
+      let pillCls = '', pillTxt = '—';
+      if (s.availability === 'उपलब्ध')      { pillCls = 'g'; pillTxt = 'उपलब्ध'; }
+      else if (s.availability === 'ब्रेक पर') { pillCls = 'a'; pillTxt = 'ब्रेक पर'; }
+      else if (s.availability === 'आज छुट्टी'){ pillCls = 'r'; pillTxt = 'आज छुट्टी'; }
+      row.innerHTML =
+        '<div class="info"><div class="nm">' + s.name + '</div></div>' +
+        '<span class="pill ' + pillCls + '">' + pillTxt + '</span>';
+      list.appendChild(row);
+
+      // highlight my own current availability on the buttons
+      if (s.id === myId && s.availability) {
+        document.querySelectorAll('.avail-btn').forEach(b => {
+          b.classList.toggle('sel', b.dataset.v === s.availability);
+        });
+      }
+    });
+    if (!list.children.length) {
+      list.innerHTML = '<div class="empty">अभी कोई जानकारी नहीं है</div>';
+    }
+  } catch (e) {
+    $('statusList').innerHTML = '<div class="empty">जानकारी लोड नहीं हुई</div>';
+  }
+}
+
+/* logout */
+function logout() {
+  sessionStorage.removeItem('ftf_token');
+  sessionStorage.removeItem('ftf_name');
+  sessionStorage.removeItem('ftf_id');
+  hide('scrDash'); show('scrPhone');
+  $('phone').value = ''; $('otp').value = '';
+  setMsg('msgPhone', ''); setMsg('msgAvail', '');
+}
+$('btnLogout').addEventListener('click', logout);
+</script>
+</body>
+</html>

@@ -82,6 +82,7 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .hero-ticker-inner{background:rgba(10,8,5,0.55);backdrop-filter:blur(10px);border:1px solid rgba(201,168,76,0.22);border-radius:11px;padding:12px 16px;overflow:hidden;min-height:62px;display:flex;align-items:center;}
 .hero-ticker-msg{font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:rgba(250,247,242,0.92);line-height:1.45;text-align:left;width:100%;animation:tickerFade 6s ease-in-out infinite;}
 .hero-ticker-accent{color:#C9A84C;font-weight:600;}
+.hero-ticker-msg .ft-gold{color:#C9A84C;font-weight:600;}
 @keyframes tickerFade{0%{opacity:0;transform:translateY(6px);}12%{opacity:1;transform:translateY(0);}78%{opacity:1;transform:translateY(0);}90%{opacity:0;transform:translateY(-6px);}100%{opacity:0;transform:translateY(6px);}}
 
 /* ── SERVICES SECTION ── */
@@ -180,6 +181,12 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .book-btn:hover,.book-btn:active{transform:translateY(-2px) scale(1.04);box-shadow:0 8px 26px rgba(201,168,76,0.6),0 0 0 2px rgba(201,168,76,0.35);}
 @keyframes bookShimmer{0%{background-position:200% center;}100%{background-position:-200% center;}}
 .story-label{position:absolute;top:14px;left:14px;background:rgba(0,0,0,0.36);backdrop-filter:blur(8px);border-radius:6px;padding:3px 9px;font-family:'Cormorant Garamond',serif;font-size:10px;font-style:italic;color:rgba(255,255,255,0.82);}
+
+/* ── 3D TILT LAYER (cat boxes + service cards only — added 11 Jun 2026) ── */
+.cat-grid{perspective:1000px;}
+.cards{perspective:1000px;}
+.cat-box,.card{transform-style:preserve-3d;will-change:transform;}
+.cat-box.tilting,.card.tilting{transition:transform .08s ease;}
 
 /* ── SUBCATEGORY BACK / NEXT ── */
 .sub-nav{width:100%;max-width:640px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;}
@@ -311,6 +318,13 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
     <div class="hero-body">
       <h1 class="hero-name">Flare to<br>Flame</h1>
       <p class="hero-tagline">Start the Spark. Become the Flame.</p>
+
+      <!-- HERO TICKER (revived 11 Jun 2026 — element was missing, JS already wired) -->
+      <div class="hero-ticker">
+        <div class="hero-ticker-inner">
+          <div class="hero-ticker-msg" id="heroTickerMsg"></div>
+        </div>
+      </div>
 
       <!-- OFFER BAND (auto-shows when an Airtable offer is live) -->
       <div class="offer-flash hidden" id="offerFlash" onclick="openOffer()">
@@ -1138,6 +1152,47 @@ async function submitFeedback() {
     btn.disabled = false; btn.textContent = 'Send Feedback →';
   }
 }
+
+/* ── 3D TILT ENGINE (added 11 Jun 2026 — cat boxes + service cards only) ──
+   Event delegation on the persistent grid containers, so tilt survives
+   every re-render (page changes, category changes). Max 5° — subtle. */
+(function(){
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var MAX = 5;
+  var current = null;
+
+  function resetTilt(el){
+    el.classList.remove('tilting');
+    el.style.transform = '';
+  }
+  function clearCurrent(){
+    if (current) { resetTilt(current); current = null; }
+  }
+  function tiltMove(e, sel){
+    var el = e.target.closest(sel);
+    if (current && current !== el) { resetTilt(current); current = null; }
+    if (!el) return;
+    current = el;
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var px = (e.clientX - r.left) / r.width;
+    var py = (e.clientY - r.top) / r.height;
+    var ry = ((px - 0.5) * 2 * MAX).toFixed(2);
+    var rx = ((0.5 - py) * 2 * MAX).toFixed(2);
+    el.classList.add('tilting');
+    el.style.transform = 'perspective(900px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) translateY(-3px)';
+  }
+  function bindTilt(id, sel){
+    var c = document.getElementById(id);
+    if (!c) return;
+    c.addEventListener('pointermove', function(e){ tiltMove(e, sel); });
+    c.addEventListener('pointerleave', clearCurrent);
+    c.addEventListener('pointerup', clearCurrent);
+    c.addEventListener('pointercancel', clearCurrent);
+  }
+  bindTilt('catGrid', '.cat-box');
+  bindTilt('cardsContainer', '.card');
+})();
 
 loadFromAirtable();
 loadOffers();

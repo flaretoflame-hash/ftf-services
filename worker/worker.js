@@ -18,6 +18,12 @@
    NEW (v3):
    POST /set-availability → staff sets own availability (token required)
 
+   NEW (v4 — online booking):
+   GET  /booking-services  → active services (price only if Price Status=Live)
+   GET  /booking-staff     → active staff who can do a service (Staff Skills)
+   POST /check-availability→ ONE-BRAIN clash engine (staff+start+duration)
+   POST /create-booking    → writes Appointment + Booking Lines, auto-creates Client
+
    Token stored as SECRET (env.AIRTABLE_TOKEN), never in the app.
    OTP + sessions stored in KV binding: env.OTP_KV
    ============================================================ */
@@ -27,6 +33,10 @@ const SERVICES_TABLE = 'Services';
 const STAFF_TABLE = 'Staff';
 const FEEDBACK_TABLE = 'Feedback';
 const OFFERS_TABLE = 'Offers';
+const APPOINTMENTS_TABLE = 'Appointments';
+const BOOKING_LINES_TABLE = 'Booking Lines';
+const STAFF_SKILLS_TABLE = 'Staff Skills';
+const CLIENTS_TABLE = 'Clients';
 
 const ALLOWED_ORIGIN = '*';
 
@@ -88,6 +98,101 @@ function makeToken() {
     s += bytes[i].toString(16).padStart(2, '0');
   }
   return s;
+}
+
+// ----- BOOKING HELPERS -----
+
+// Local YYYY-MM-DD for an ISO timestamp, used to match Appointments by Date.
+function isoToDateStr(iso) {
+  return String(iso || '').slice(0, 10);
+}
+
+// Two time intervals overlap if each starts before the other ends.
+// Touching edges (one ends exactly when next starts) is NOT a clash.
+function intervalsOverlap(startA, endA, startB, endB) {
+  return startA < endB && startB < endA;
+}
+
+// The single source of truth for clash detection. Used by BOTH
+// /check-availability (live UI) and /create-booking (server re-check),
+// so receptionist + online booking share one brain → no cross-channel clash.
+// Returns { available, clashes:[{appointmentId, start, end}] }
+async function computeAvailability(env, authHeader, staffId, startISO, durationMins) {
+  const dur = Number(durationMins) || 0;
+  const newStart = new Date(startISO).getTime();
+  const newEnd = newStart + dur * 60000;
+  const dayStr = isoToDateStr(startISO);
+
+  if (!staffId || !startISO || !dur || isNaN(newStart)) {
+    return { available: false, error: 'staffId, startISO and durationMins required' };
+  }
+
+  // 1. Pull this staff's appointments on this day, excluding cancelled.
+  //    filterByFormula keeps it to same staff + same Date + not Cancelled.
+  const formula =
+    `AND(` +
+      `FIND('${staffId}', ARRAYJOIN({Staff})),` +
+      `IS_SAME({Date}, '${dayStr}', 'day'),` +
+      `{Status} != 'Cancelled'` +
+    `)`;
+  const apptUrl =
+    `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(APPOINTMENTS_TABLE)}` +
+    `?filterByFormula=${encodeURIComponent(formula)}` +
+    `&fields%5B%5D=Start%20Time&fields%5B%5D=Booking%20Lines&fields%5B%5D=Status&pageSize=100`;
+  const apptRes = await fetch(apptUrl, { headers: authHeader });
+  const apptData = await apptRes.json();
+  const appts = apptData.records || [];
+
+  if (appts.length === 0) {
+    return { available: true, clashes: [] };
+  }
+
+  // 2. Collect every Booking Line id across these appts to sum durations.
+  const lineIds = [];
+  appts.forEach(a => {
+    const links = (a.fields && a.fields['Booking Lines']) || [];
+    links.forEach(id => lineIds.push(id));
+  });
+
+  // Map lineId -> duration. One batched read of Booking Lines.
+  const lineDur = {};
+  if (lineIds.length > 0) {
+    const orParts = lineIds.map(id => `RECORD_ID()='${id}'`).join(',');
+    const lineFormula = `OR(${orParts})`;
+    const lineUrl =
+      `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(BOOKING_LINES_TABLE)}` +
+      `?filterByFormula=${encodeURIComponent(lineFormula)}` +
+      `&fields%5B%5D=Duration&pageSize=100`;
+    const lineRes = await fetch(lineUrl, { headers: authHeader });
+    const lineData = await lineRes.json();
+    (lineData.records || []).forEach(l => {
+      lineDur[l.id] = Number(l.fields && l.fields.Duration) || 0;
+    });
+  }
+
+  // 3. For each existing appt compute its [start, end] and test overlap.
+  const clashes = [];
+  appts.forEach(a => {
+    const st = a.fields && a.fields['Start Time'];
+    if (!st) return; // no real timestamp -> can't clash-check, skip
+    const exStart = new Date(st).getTime();
+    if (isNaN(exStart)) return;
+    const links = (a.fields && a.fields['Booking Lines']) || [];
+    let summed = 0;
+    links.forEach(id => { summed += lineDur[id] || 0; });
+    // If an appt has no lines/duration yet, treat as 30 min minimum block
+    const exDur = summed > 0 ? summed : 30;
+    const exEnd = exStart + exDur * 60000;
+    if (intervalsOverlap(newStart, newEnd, exStart, exEnd)) {
+      clashes.push({
+        appointmentId: a.id,
+        start: new Date(exStart).toISOString(),
+        end: new Date(exEnd).toISOString(),
+      });
+    }
+  });
+
+  return { available: clashes.length === 0, clashes };
 }
 
 export default {
@@ -412,6 +517,232 @@ export default {
         }
 
         return json({ ok: true, availability: availability });
+      }
+
+      // ====================================================
+      // BOOKING ROUTES (v4 — online booking, one-brain clash check)
+      // ====================================================
+
+      // ---- 11. BOOKING SERVICES (client-safe service list) ----
+      // GET /booking-services
+      // Returns active services with name, category, subcategory, duration.
+      // Price shown ONLY if Price Status = Live (Golden Rule: no internal numbers).
+      if (request.method === 'GET' && url.pathname === '/booking-services') {
+        const r = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(SERVICES_TABLE)}` +
+          `?filterByFormula=${encodeURIComponent("{Active}=1")}` +
+          `&fields%5B%5D=Service%20Name&fields%5B%5D=Category&fields%5B%5D=Subcategory` +
+          `&fields%5B%5D=Duration%20Minutes&fields%5B%5D=Display%20Price&fields%5B%5D=Sort%20Order` +
+          `&pageSize=100`,
+          { headers: authHeader }
+        );
+        const data = await r.json();
+        const services = (data.records || []).map(rec => {
+          const f = rec.fields || {};
+          return {
+            id: rec.id,
+            name: f['Service Name'] || '',
+            category: f['Category'] || '',
+            subcategory: f['Subcategory'] || '',
+            duration: Number(f['Duration Minutes']) || 0,
+            // Display Price is blank unless Price Status = Live (gated formula)
+            price: f['Display Price'] || '',
+            sortOrder: Number(f['Sort Order']) || 0,
+          };
+        }).sort((a, b) => a.sortOrder - b.sortOrder);
+        return json({ services });
+      }
+
+      // ---- 12. BOOKING STAFF (who can do this service) ----
+      // GET /booking-staff?serviceId=recXXXX
+      // Returns ACTIVE staff linked to this service via Staff Skills.
+      // If no skills mapped for the service, falls back to all active staff.
+      if (request.method === 'GET' && url.pathname === '/booking-staff') {
+        const serviceId = url.searchParams.get('serviceId') || '';
+
+        // Pull all active staff once (small table).
+        const staffRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(STAFF_TABLE)}` +
+          `?fields%5B%5D=Name&fields%5B%5D=Staff%20Status&fields%5B%5D=Availability&pageSize=100`,
+          { headers: authHeader }
+        );
+        const staffData = await staffRes.json();
+        const activeStaff = (staffData.records || []).filter(
+          rec => (rec.fields && rec.fields['Staff Status']) === 'Active'
+        );
+
+        let allowedIds = null; // null = no skill filter (fallback)
+        if (serviceId) {
+          const skillFormula = `FIND('${serviceId}', ARRAYJOIN({Service}))`;
+          const skillRes = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(STAFF_SKILLS_TABLE)}` +
+            `?filterByFormula=${encodeURIComponent(skillFormula)}` +
+            `&fields%5B%5D=Staff&pageSize=100`,
+            { headers: authHeader }
+          );
+          const skillData = await skillRes.json();
+          const skillRows = skillData.records || [];
+          if (skillRows.length > 0) {
+            allowedIds = new Set();
+            skillRows.forEach(row => {
+              const staffLinks = (row.fields && row.fields['Staff']) || [];
+              staffLinks.forEach(id => allowedIds.add(id));
+            });
+          }
+        }
+
+        const staff = activeStaff
+          .filter(rec => !allowedIds || allowedIds.has(rec.id))
+          .map(rec => {
+            const f = rec.fields || {};
+            return {
+              id: rec.id,
+              name: f.Name || 'Staff',
+              availability: f['Availability'] || '',
+            };
+          });
+
+        return json({ staff, skillFiltered: allowedIds !== null });
+      }
+
+      // ---- 13. CHECK AVAILABILITY (the one-brain clash engine) ----
+      // POST /check-availability
+      // body: { staffId, startISO, durationMins }
+      if (request.method === 'POST' && url.pathname === '/check-availability') {
+        const body = await request.json();
+        const result = await computeAvailability(
+          env, authHeader, body.staffId, body.startISO, body.durationMins
+        );
+        const status = result.error ? 400 : 200;
+        return json(result, status);
+      }
+
+      // ---- 14. CREATE BOOKING (write appt + lines, auto-create client) ----
+      // POST /create-booking
+      // body: {
+      //   clientName, clientPhone,
+      //   staffId, startISO, timeSlot,
+      //   services: [{ id, duration }]   // one or more
+      // }
+      if (request.method === 'POST' && url.pathname === '/create-booking') {
+        const body = await request.json();
+        const clientName = String(body.clientName || '').trim();
+        const clientPhone = normalizePhone(body.clientPhone).slice(-10);
+        const staffId = String(body.staffId || '').trim();
+        const startISO = String(body.startISO || '').trim();
+        const timeSlot = String(body.timeSlot || '').trim();
+        const services = Array.isArray(body.services) ? body.services : [];
+
+        if (!clientName || !clientPhone || !staffId || !startISO || services.length === 0) {
+          return json({ ok: false, error: 'Missing required booking fields' }, 400);
+        }
+
+        // Total duration = sum of chosen services' durations.
+        const totalDuration = services.reduce(
+          (sum, s) => sum + (Number(s.duration) || 0), 0
+        );
+
+        // SERVER-SIDE RE-CHECK — never trust the client. Same brain.
+        const check = await computeAvailability(
+          env, authHeader, staffId, startISO, totalDuration
+        );
+        if (!check.available) {
+          return json({ ok: false, error: 'Slot no longer available', clashes: check.clashes || [] }, 409);
+        }
+
+        // 1. Find or auto-create the Client by last-10 phone match.
+        let clientId = null;
+        const cRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(CLIENTS_TABLE)}` +
+          `?fields%5B%5D=Name&fields%5B%5D=Phone&pageSize=100`,
+          { headers: authHeader }
+        );
+        const cData = await cRes.json();
+        const existing = (cData.records || []).find(rec =>
+          samePhone(rec.fields && rec.fields.Phone, clientPhone)
+        );
+        if (existing) {
+          clientId = existing.id;
+        } else {
+          const newC = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(CLIENTS_TABLE)}`,
+            {
+              method: 'POST',
+              headers: { ...authHeader, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                records: [{ fields: { 'Name': clientName, 'Phone': clientPhone } }],
+                typecast: true,
+              }),
+            }
+          );
+          const newCData = await newC.json();
+          if (!newC.ok) {
+            return json({ ok: false, error: 'Could not create client', detail: newCData }, 400);
+          }
+          clientId = newCData.records[0].id;
+        }
+
+        // 2. Create the Appointment (one booking id).
+        const apptId = 'APT-' + Date.now();
+        const apptFields = {
+          'Appointment ID': apptId,
+          'Client': [clientId],
+          'Staff': [staffId],
+          'Date': isoToDateStr(startISO),
+          'Start Time': startISO,
+          'Status': 'Booked',
+        };
+        if (timeSlot) apptFields['Time Slot'] = timeSlot;
+
+        const apptRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(APPOINTMENTS_TABLE)}`,
+          {
+            method: 'POST',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ records: [{ fields: apptFields }], typecast: true }),
+          }
+        );
+        const apptData = await apptRes.json();
+        if (!apptRes.ok) {
+          return json({ ok: false, error: 'Could not create appointment', detail: apptData }, 400);
+        }
+        const appointmentRecId = apptData.records[0].id;
+
+        // 3. Create one Booking Line per chosen service (child lines).
+        //    Price At Booking left empty — price gate not live yet (Golden Rule).
+        const lineRecords = services.map(s => ({
+          fields: {
+            'Appointment': [appointmentRecId],
+            'Service': [s.id],
+            'Assigned Staff': [staffId],
+            'Duration': Number(s.duration) || 0,
+          },
+        }));
+        const linesRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(BOOKING_LINES_TABLE)}`,
+          {
+            method: 'POST',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ records: lineRecords, typecast: true }),
+          }
+        );
+        const linesData = await linesRes.json();
+        if (!linesRes.ok) {
+          return json({
+            ok: false,
+            error: 'Appointment made but booking lines failed',
+            appointmentId: appointmentRecId,
+            detail: linesData,
+          }, 400);
+        }
+
+        return json({
+          ok: true,
+          appointmentId: apptId,
+          appointmentRecId,
+          clientId,
+          lines: (linesData.records || []).length,
+        });
       }
 
       return new Response('Not found', { status: 404, headers: cors() });

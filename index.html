@@ -127,6 +127,12 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
 .crumb-link:hover{color:#C9A84C;}
 .crumb-sep{color:rgba(201,168,76,0.3);}
 .crumb-here{color:#FAF7F2;}
+.catjump-wrap{width:100%;max-width:640px;margin:0 auto 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.catjump-wrap::-webkit-scrollbar{display:none;}
+.catjump-bar{display:flex;gap:7px;padding:2px 0 6px;width:max-content;}
+.catjump-btn{font-family:'Jost',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:6px 13px;border-radius:7px;border:1.5px solid rgba(201,168,76,0.22);background:rgba(201,168,76,0.06);color:rgba(201,168,76,0.6);cursor:pointer;white-space:nowrap;transition:all .25s ease;-webkit-tap-highlight-color:transparent;}
+.catjump-btn:hover{border-color:rgba(201,168,76,0.45);color:rgba(201,168,76,0.9);}
+.catjump-btn.active{background:#C9A84C;color:#0a0805;border-color:#C9A84C;box-shadow:0 3px 14px rgba(201,168,76,0.35);}
 
 /* category boxes — 8 visual cards */
 .cat-grid{width:100%;display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
@@ -377,6 +383,11 @@ body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;}
       <span class="crumb-link" id="crumbCatBack" onclick="goToSubs()"></span>
       <span class="crumb-sep">›</span>
       <span class="crumb-here" id="crumbSub"></span>
+    </div>
+
+    <!-- CATEGORY JUMP STRIP (added 14 Jun 2026 — jump between services without home detour) -->
+    <div class="catjump-wrap">
+      <div class="catjump-bar" id="catJumpBar"></div>
     </div>
 
     <!-- Filter ticker -->
@@ -839,6 +850,7 @@ function openSub(sub) {
   showFilterTicker(cm.key);
   startHeroTicker(cm.key);
   updateSubNav();
+  renderCatJump();
   showStage('stageCards');
   renderPage();
 }
@@ -859,6 +871,37 @@ function updateSubNav() {
   prev.style.visibility = single ? 'hidden' : 'visible';
   next.style.visibility = single ? 'hidden' : 'visible';
   if (lbl) lbl.textContent = activeSub;
+}
+
+/* ── CATEGORY JUMP STRIP (jump service→service, no home detour) ── */
+function renderCatJump() {
+  var bar = document.getElementById('catJumpBar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  CAT_ORDER.forEach(function(catName){
+    var cm = CAT_MAP[catName];
+    var b = document.createElement('div');
+    b.className = 'catjump-btn' + (catName === activeCat ? ' active' : '');
+    b.textContent = cm.label;
+    b.onclick = (function(c){ return function(){ jumpToCat(c); }; })(catName);
+    bar.appendChild(b);
+  });
+}
+
+function jumpToCat(catName) {
+  if (catName === activeCat) return;
+  activeCat = catName;
+  var cm = CAT_MAP[catName];
+  var key = cm.key;
+  var subs = [];
+  SERVICES.forEach(function(s){
+    if (s.category !== key) return;
+    var sub = s.story || 'General';
+    if (subs.indexOf(sub) === -1) subs.push(sub);
+  });
+  currentSubs = subs;
+  // land directly on the first subcategory's cards — no Subs stage, no Home
+  openSub(subs[0] || 'General');
 }
 
 function showStage(id) {

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Book — Flare to Flame</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dark:#0a0805; --dark2:#14100a;
+    --gold:#C9A84C; --gold-soft:#f0dca0; --gold-deep:#b89326;
+    --cream:#FAF7F2;
+    --line:rgba(201,168,76,0.18);
+    --ok:#6FBF73; --bad:#D98C7A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--dark);font-family:'Jost',sans-serif;color:var(--cream);min-height:100vh;
+       background-image:radial-gradient(ellipse at top,rgba(201,168,76,0.06),transparent 60%);}
+  .wrap{max-width:480px;margin:0 auto;padding:0 20px 120px;}
+
+  /* Header */
+  .top{display:flex;align-items:center;justify-content:space-between;padding:22px 0 14px;}
+  .brand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--cream);letter-spacing:.5px;}
+  .brand span{color:var(--gold);}
+  .back{font-family:'Jost',sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+        color:rgba(250,247,242,0.55);text-decoration:none;}
+
+  .lead{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;line-height:1.05;margin-bottom:6px;}
+  .lead em{font-style:italic;color:var(--gold);}
+  .sub{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(250,247,242,0.4);margin-bottom:24px;}
+
+  /* Stepper */
+  .steps{display:flex;gap:6px;margin-bottom:26px;}
+  .step{flex:1;height:3px;border-radius:3px;background:rgba(201,168,76,0.18);transition:background .3s;}
+  .step.on{background:linear-gradient(90deg,var(--gold-soft),var(--gold));}
+
+  .panel{display:none;animation:fade .35s ease;}
+  .panel.show{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px;font-weight:600;margin-bottom:14px;color:var(--cream);}
+
+  /* Service / staff cards */
+  .item{display:flex;align-items:center;justify-content:space-between;gap:12px;
+        background:linear-gradient(135deg,rgba(20,16,10,0.9),rgba(10,8,5,0.9));
+        border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;
+        transition:border-color .2s, transform .15s;}
+  .item:active{transform:scale(.99);}
+  .item.sel{border-color:var(--gold);box-shadow:0 0 0 1px rgba(201,168,76,0.5),0 6px 22px rgba(201,168,76,0.12);}
+  .item-name{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;line-height:1.2;}
+  .item-meta{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(250,247,242,0.4);margin-top:3px;}
+  .tick{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--dark);}
+  .item.sel .tick{background:var(--gold);border-color:var(--gold);}
+
+  .group-title{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:18px 0 8px;font-weight:600;}
+
+  /* Inputs */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(250,247,242,0.5);margin-bottom:6px;}
+  .field input{width:100%;background:rgba(20,16,10,0.9);border:1px solid var(--line);border-radius:12px;
+        padding:13px 14px;color:var(--cream);font-family:'Jost',sans-serif;font-size:15px;}
+  .field input:focus{outline:none;border-color:var(--gold);}
+  .row2{display:flex;gap:10px;}
+  .row2 .field{flex:1;}
+
+  /* Result banner */
+  .result{border-radius:13px;padding:14px 16px;margin:16px 0;font-size:14px;line-height:1.5;display:none;}
+  .result.show{display:block;}
+  .result.ok{background:rgba(111,191,115,0.12);border:1px solid rgba(111,191,115,0.4);color:#cdeccf;}
+  .result.bad{background:rgba(217,140,122,0.12);border:1px solid rgba(217,140,122,0.4);color:#f0d2cb;}
+  .result b{font-family:'Cormorant Garamond',serif;font-style:italic;}
+
+  /* Summary */
+  .summary{background:linear-gradient(135deg,rgba(20,16,10,0.95),rgba(10,8,5,0.95));border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:18px;}
+  .summary .s-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;color:rgba(250,247,242,0.8);}
+  .summary .s-row span:first-child{color:rgba(250,247,242,0.45);letter-spacing:.06em;}
+
+  /* Buttons */
+  .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+       background:linear-gradient(135deg,var(--gold-soft),var(--gold-deep));color:#1a1305;
+       padding:15px;border:none;border-radius:13px;font-family:'Jost',sans-serif;font-size:13px;font-weight:700;
+       letter-spacing:1px;text-transform:uppercase;cursor:pointer;box-shadow:0 8px 30px rgba(180,140,30,0.4);
+       transition:transform .15s, opacity .2s;}
+  .cta:active{transform:scale(.99);}
+  .cta:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+  .ghost{background:transparent;border:1.5px solid var(--line);color:rgba(250,247,242,0.7);box-shadow:none;}
+  .navbtns{display:flex;gap:10px;margin-top:20px;}
+  .navbtns .cta{flex:1;}
+
+  /* Bottom WhatsApp fallback */
+  .wa-fixed{position:fixed;left:0;right:0;bottom:0;padding:12px 20px calc(12px + env(safe-area-inset-bottom));
+            background:linear-gradient(0deg,var(--dark) 70%,transparent);max-width:480px;margin:0 auto;}
+  .wa-fixed a{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;
+            font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(250,247,242,0.55);
+            border:1px solid var(--line);border-radius:11px;padding:11px;font-weight:500;}
+
+  .loading{text-align:center;padding:30px;color:rgba(250,247,242,0.5);font-style:italic;font-family:'Cormorant Garamond',serif;font-size:17px;}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(250,247,242,0.3);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:8px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  .done-wrap{text-align:center;padding:40px 10px;}
+  .done-ring{width:70px;height:70px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:30px;color:var(--gold);}
+  .done-wrap h2{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;margin-bottom:8px;}
+  .done-wrap p{font-size:13px;color:rgba(250,247,242,0.6);line-height:1.6;margin-bottom:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">Flare to <span>Flame</span></div>
+    <a class="back" href="index.html">&larr; Home</a>
+  </div>
+
+  <div class="lead">Reserve your <em>moment</em>.</div>
+  <div class="sub">Book your appointment</div>
+
+  <div class="steps">
+    <div class="step on" id="st1"></div>
+    <div class="step" id="st2"></div>
+    <div class="step" id="st3"></div>
+    <div class="step" id="st4"></div>
+  </div>
+
+  <!-- STEP 1: SERVICES -->
+  <div class="panel show" id="p1">
+    <div class="label">Choose your services</div>
+    <div id="svcList"><div class="loading"><span class="spin"></span>Bringing the menu…</div></div>
+    <div class="navbtns">
+      <button class="cta" id="toStaff" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: STAFF -->
+  <div class="panel" id="p2">
+    <div class="label">Choose your specialist</div>
+    <div id="staffList"></div>
+    <div class="navbtns">
+      <button class="cta ghost" onclick="goStep(1)">Back</button>
+      <button class="cta" id="toTime" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: DATE + TIME -->
+  <div class="panel" id="p3">
+    <div class="label">Pick a date &amp; time</div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="dateIn">
+    </div>
+    <div class="field">
+      <label>Start time</label>
+      <input type="time" id="timeIn">
+    </div>
+    <button class="cta ghost" id="checkBtn" style="margin-top:4px;">Check this slot</button>
+    <div class="result" id="checkResult"></div>
+    <div class="navbtns">
+      <button class="cta ghost" onclick="goStep(2)">Back</button>
+      <button class="cta" id="toDetails" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: DETAILS + CONFIRM -->
+  <div class="panel" id="p4">
+    <div class="label">Almost there</div>
+    <div class="summary" id="summaryBox"></div>
+    <div class="row2">
+      <div class="field"><label>Your name</label><input type="text" id="nameIn" placeholder="Full name"></div>
+    </div>
+    <div class="field"><label>Mobile number</label><input type="tel" id="phoneIn" placeholder="10-digit mobile" maxlength="10"></div>
+    <div class="result" id="confirmResult"></div>
+    <div class="navbtns">
+      <button class="cta ghost" onclick="goStep(3)">Back</button>
+      <button class="cta" id="confirmBtn">Confirm Booking</button>
+    </div>
+  </div>
+
+  <!-- DONE -->
+  <div class="panel" id="pDone">
+    <div class="done-wrap">
+      <div class="done-ring">&#10003;</div>
+      <h2>You're booked.</h2>
+      <p id="doneMsg"></p>
+      <p style="color:var(--gold);font-style:italic;font-family:'Cormorant Garamond',serif;font-size:18px;margin-top:14px;">We can't wait to see you.</p>
+      <div class="navbtns" style="margin-top:26px;">
+        <a class="cta" href="index.html" style="text-decoration:none;">Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="wa-fixed" id="waBar">
+  <a href="https://wa.me/919718831333" target="_blank">Prefer to chat? Book on WhatsApp</a>
+</div>
+
+<script>
+const WORKER_URL = 'https://ftf-airtable.flaretoflame.workers.dev';
+
+const state = {
+  step: 1,
+  services: [],        // all loaded
+  selectedServices: [],// chosen {id,name,duration}
+  staffId: null,
+  staffName: null,
+  startISO: null,
+  timeSlot: null,
+  checked: false,
+};
+
+/* ---------- helpers ---------- */
+function setStep(n){
+  state.step = n;
+  for (let i=1;i<=4;i++){
+    document.getElementById('p'+i).classList.toggle('show', i===n);
+    document.getElementById('st'+i).classList.toggle('on', i<=n);
+  }
+  document.getElementById('pDone').classList.remove('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goStep(n){ setStep(n); }
+function totalDuration(){ return state.selectedServices.reduce((s,x)=>s+(x.duration||0),0); }
+
+/* ---------- STEP 1: load + pick services ---------- */
+async function loadServices(){
+  try{
+    const r = await fetch(WORKER_URL + '/booking-services');
+    const data = await r.json();
+    state.services = data.services || [];
+    renderServices();
+  }catch(e){
+    document.getElementById('svcList').innerHTML =
+      '<div class="loading">Couldn\'t load services. Please try WhatsApp below.</div>';
+  }
+}
+function renderServices(){
+  const box = document.getElementById('svcList');
+  if (!state.services.length){ box.innerHTML='<div class="loading">No services available right now.</div>'; return; }
+  // group by category, preserve sort order
+  const groups = {};
+  state.services.forEach(s=>{ (groups[s.category||'Services'] ||= []).push(s); });
+  let html='';
+  Object.keys(groups).forEach(cat=>{
+    html += '<div class="group-title">'+cat+'</div>';
+    groups[cat].forEach(s=>{
+      const sel = state.selectedServices.some(x=>x.id===s.id);
+      const meta = s.duration ? (s.duration+' min') : 'Duration on request';
+      html += '<div class="item'+(sel?' sel':'')+'" data-id="'+s.id+'">'+
+                '<div><div class="item-name">'+s.name+'</div><div class="item-meta">'+meta+'</div></div>'+
+                '<div class="tick">'+(sel?'\u2713':'')+'</div>'+
+              '</div>';
+    });
+  });
+  box.innerHTML = html;
+  box.querySelectorAll('.item').forEach(el=>{
+    el.onclick = ()=>toggleService(el.getAttribute('data-id'));
+  });
+  document.getElementById('toStaff').disabled = state.selectedServices.length===0;
+}
+function toggleService(id){
+  const idx = state.selectedServices.findIndex(x=>x.id===id);
+  if (idx>=0){ state.selectedServices.splice(idx,1); }
+  else {
+    const s = state.services.find(x=>x.id===id);
+    if (s) state.selectedServices.push({id:s.id,name:s.name,duration:s.duration});
+  }
+  state.checked=false;
+  renderServices();
+}
+
+/* ---------- STEP 2: staff ---------- */
+async function loadStaff(){
+  const box = document.getElementById('staffList');
+  box.innerHTML = '<div class="loading"><span class="spin"></span>Finding your specialists…</div>';
+  try{
+    // use first selected service to filter by skill; backend falls back to all active
+    const sid = state.selectedServices[0] ? state.selectedServices[0].id : '';
+    const r = await fetch(WORKER_URL + '/booking-staff?serviceId=' + encodeURIComponent(sid));
+    const data = await r.json();
+    const staff = data.staff || [];
+    if (!staff.length){
+      box.innerHTML = '<div class="loading">Our team is being assembled. Please book on WhatsApp below.</div>';
+      return;
+    }
+    let html='';
+    staff.forEach(m=>{
+      const sel = state.staffId===m.id;
+      html += '<div class="item'+(sel?' sel':'')+'" data-id="'+m.id+'" data-name="'+m.name.replace(/"/g,'')+'">'+
+                '<div><div class="item-name">'+m.name+'</div></div>'+
+                '<div class="tick">'+(sel?'\u2713':'')+'</div>'+
+              '</div>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll('.item').forEach(el=>{
+      el.onclick = ()=>{
+        state.staffId = el.getAttribute('data-id');
+        state.staffName = el.getAttribute('data-name');
+        state.checked = false;
+        loadStaff(); // re-render selection
+        document.getElementById('toTime').disabled = false;
+      };
+    });
+    document.getElementById('toTime').disabled = !state.staffId;
+  }catch(e){
+    box.innerHTML = '<div class="loading">Couldn\'t load specialists. Please try WhatsApp below.</div>';
+  }
+}
+
+/* ---------- STEP 3: check availability ---------- */
+function buildStartISO(){
+  const d = document.getElementById('dateIn').value;
+  const t = document.getElementById('timeIn').value;
+  if (!d || !t) return null;
+  // local time -> ISO. new Date('YYYY-MM-DDTHH:MM') is parsed as local.
+  const dt = new Date(d + 'T' + t);
+  if (isNaN(dt.getTime())) return null;
+  state.timeSlot = t;
+  return dt.toISOString();
+}
+async function checkSlot(){
+  const iso = buildStartISO();
+  const res = document.getElementById('checkResult');
+  const btn = document.getElementById('checkBtn');
+  if (!iso){ showResult(res,'bad','Please pick both a date and a time.'); return; }
+  if (!state.staffId){ showResult(res,'bad','Please choose a specialist first.'); return; }
+  state.startISO = iso;
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Checking…';
+  try{
+    const r = await fetch(WORKER_URL + '/check-availability', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ staffId:state.staffId, startISO:iso, durationMins:totalDuration() })
+    });
+    const data = await r.json();
+    if (data.available){
+      state.checked = true;
+      const t = document.getElementById('timeIn').value;
+      showResult(res,'ok','<b>'+state.staffName+'</b> is free at '+fmtTime(t)+'. Tap continue to confirm.');
+      document.getElementById('toDetails').disabled = false;
+    } else {
+      state.checked = false;
+      showResult(res,'bad','<b>'+state.staffName+'</b> is already booked around that time. Please pick another slot.');
+      document.getElementById('toDetails').disabled = true;
+    }
+  }catch(e){
+    showResult(res,'bad','Couldn\'t check right now. Please try again or book on WhatsApp.');
+  }
+  btn.disabled=false; btn.textContent='Check this slot';
+}
+function showResult(el,kind,msg){ el.className='result show '+kind; el.innerHTML=msg; }
+function fmtTime(t){
+  if(!t) return '';
+  const [h,m]=t.split(':'); let hh=parseInt(h,10); const ap=hh>=12?'PM':'AM';
+  hh=hh%12||12; return hh+':'+m+' '+ap;
+}
+
+/* ---------- STEP 4: summary + confirm ---------- */
+function renderSummary(){
+  const names = state.selectedServices.map(s=>s.name).join(', ');
+  const d = document.getElementById('dateIn').value;
+  const t = document.getElementById('timeIn').value;
+  document.getElementById('summaryBox').innerHTML =
+    '<div class="s-row"><span>Services</span><span style="text-align:right;max-width:60%">'+names+'</span></div>'+
+    '<div class="s-row"><span>Specialist</span><span>'+(state.staffName||'')+'</span></div>'+
+    '<div class="s-row"><span>Date</span><span>'+d+'</span></div>'+
+    '<div class="s-row"><span>Time</span><span>'+fmtTime(t)+'</span></div>'+
+    '<div class="s-row"><span>Duration</span><span>'+totalDuration()+' min</span></div>';
+}
+async function confirmBooking(){
+  const res = document.getElementById('confirmResult');
+  const name = document.getElementById('nameIn').value.trim();
+  const phone = (document.getElementById('phoneIn').value||'').replace(/[^0-9]/g,'');
+  if (!name){ showResult(res,'bad','Please enter your name.'); return; }
+  if (phone.length<10){ showResult(res,'bad','Please enter a valid 10-digit mobile number.'); return; }
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Confirming…';
+  try{
+    const r = await fetch(WORKER_URL + '/create-booking', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        clientName:name, clientPhone:phone,
+        staffId:state.staffId, startISO:state.startISO, timeSlot:state.timeSlot,
+        services: state.selectedServices.map(s=>({id:s.id,duration:s.duration}))
+      })
+    });
+    const data = await r.json();
+    if (data.ok){
+      const t = document.getElementById('timeIn').value;
+      document.getElementById('doneMsg').innerHTML =
+        'Your appointment with <b>'+state.staffName+'</b> is confirmed for '+
+        document.getElementById('dateIn').value+' at '+fmtTime(t)+'.<br>Reference: '+data.appointmentId;
+      for(let i=1;i<=4;i++) document.getElementById('p'+i).classList.remove('show');
+      document.getElementById('pDone').classList.add('show');
+      document.getElementById('waBar').style.display='none';
+      window.scrollTo({top:0,behavior:'smooth'});
+    } else if (r.status===409){
+      showResult(res,'bad','That slot was just taken. Please go back and pick another time.');
+    } else {
+      showResult(res,'bad','Something went wrong. Please try WhatsApp below.');
+    }
+  }catch(e){
+    showResult(res,'bad','Couldn\'t confirm right now. Please try WhatsApp below.');
+  }
+  btn.disabled=false; btn.textContent='Confirm Booking';
+}
+
+/* ---------- wiring ---------- */
+document.getElementById('toStaff').onclick = ()=>{ setStep(2); loadStaff(); };
+document.getElementById('toTime').onclick = ()=>setStep(3);
+document.getElementById('checkBtn').onclick = checkSlot;
+document.getElementById('toDetails').onclick = ()=>{ renderSummary(); setStep(4); };
+document.getElementById('confirmBtn').onclick = confirmBooking;
+// re-check required if user edits date/time after a green check
+['dateIn','timeIn'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', ()=>{
+    state.checked=false; document.getElementById('toDetails').disabled=true;
+    const res=document.getElementById('checkResult'); res.className='result'; res.innerHTML='';
+  });
+});
+// min date = today
+document.getElementById('dateIn').min = new Date().toISOString().slice(0,10);
+
+loadServices();
+</script>
+</body>
+</html>

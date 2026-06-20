@@ -50,8 +50,10 @@ const LEADS_TABLE = 'Leads';
    env.IG_PAGE_TOKEN      — long-lived IG/Page access token for sending the auto-DM.
    KEYWORD_MAP below = which commented keyword triggers which DM + which post. */
 const KEYWORD_MAP = {
-  // 'RESET':  { dm: 'Here is your free guide: <link>', post: 'Topic1-reset' },
-  // 'ANIMATE':{ dm: '...', post: '...' },
+  // Each keyword -> what to send + which post + which language (for the bilingual A/B test).
+  // Use DIFFERENT keywords per language so Language lands cleanly in Airtable:
+  //   'RESET':    { dm: 'Here is your free guide: <link>', post: 'Topic1-reset (EN)',  lang: 'EN' },
+  //   'RESET-HI': { dm: 'Yeh raha aapka free guide: <link>', post: 'Topic1-reset (HI)', lang: 'Hinglish' },
 };
 
 const ALLOWED_ORIGIN = '*';
@@ -209,6 +211,15 @@ async function computeAvailability(env, authHeader, staffId, startISO, durationM
   });
 
   return { available: clashes.length === 0, clashes };
+}
+
+
+// FIX: HMAC-SHA256 hex helper for Meta webhook signature verification (Web Crypto).
+async function hmacSha256Hex(secret, message) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export default {
@@ -783,8 +794,17 @@ export default {
       //     We match the comment text against KEYWORD_MAP, write a lead row,
       //     and (once IG_PAGE_TOKEN is set) fire the one allowed Private Reply DM.
       if (request.method === 'POST' && url.pathname === '/meta-webhook') {
+        // FIX: verify the payload really came from Meta (X-Hub-Signature-256 = HMAC-SHA256 of raw body with APP_SECRET).
+        const rawBody = await request.text();
+        if (env.META_APP_SECRET) {
+          const sigHeader = request.headers.get('x-hub-signature-256') || '';
+          const expected = await hmacSha256Hex(env.META_APP_SECRET, rawBody);
+          if (sigHeader !== ('sha256=' + expected)) {
+            return new Response('Invalid signature', { status: 401, headers: cors() });
+          }
+        }
         let body;
-        try { body = await request.json(); } catch { return json({ ok: false, error: 'bad json' }, 400); }
+        try { body = JSON.parse(rawBody); } catch { return json({ ok: false, error: 'bad json' }, 400); }
 
         // Meta payload shape: entry[].changes[].value { text, from, media_id, comment_id }
         const entries = Array.isArray(body.entry) ? body.entry : [];
@@ -811,14 +831,16 @@ export default {
               'Trigger Post': cfg.post || (v.media_id || ''),
               'Status': 'New',
             };
-            let leadWrite = { ok: false };
+            if (cfg.lang) leadFields['Language'] = cfg.lang; // FIX: language lands for the A/B test
+            let leadWrite = { ok: false, recId: null };
             try {
               const r = await fetch(
                 `https://api.airtable.com/v0/${MARKETING_BASE}/${encodeURIComponent(LEADS_TABLE)}`,
                 { method: 'POST', headers: { ...authHeader, 'Content-Type': 'application/json' },
                   body: JSON.stringify({ records: [{ fields: leadFields }], typecast: true }) }
               );
-              leadWrite = { ok: r.ok };
+              const rd = await r.json().catch(() => ({}));
+              leadWrite = { ok: r.ok, recId: (rd.records && rd.records[0] && rd.records[0].id) || null };
             } catch (e) { leadWrite = { ok: false, err: e.message }; }
 
             // 2) Send the ONE allowed Private Reply DM (only if token + comment_id present)
@@ -831,10 +853,18 @@ export default {
                     body: JSON.stringify({ message: cfg.dm }) }
                 );
                 dmSent = dmRes.ok;
-                if (dmSent && leadWrite.ok) {
-                  // best-effort: mark DM Sent (skipped here to keep one write; upgrade later)
-                }
               } catch (e) { /* swallow — lead is already captured */ }
+            }
+
+            // 3) FIX: if the DM went out, advance the lead Status to "DM Sent"
+            if (dmSent && leadWrite.recId) {
+              try {
+                await fetch(
+                  `https://api.airtable.com/v0/${MARKETING_BASE}/${encodeURIComponent(LEADS_TABLE)}`,
+                  { method: 'PATCH', headers: { ...authHeader, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ records: [{ id: leadWrite.recId, fields: { 'Status': 'DM Sent' } }], typecast: true }) }
+                );
+              } catch (e) { /* lead captured; status bump is best-effort */ }
             }
             results.push({ keyword: hitKey, handle, lead: leadWrite.ok, dm: dmSent });
           }

@@ -38,6 +38,22 @@ const BOOKING_LINES_TABLE = 'Booking Lines';
 const STAFF_SKILLS_TABLE = 'Staff Skills';
 const CLIENTS_TABLE = 'Clients';
 
+/* ---- MARKETING / LEADS (added 20 Jun 2026 — comment-to-DM funnel) ----
+   DORMANT until Meta app + Instagram Private Replies approval are live.
+   New base "FTF Marketing" — separate from Salon OS base. */
+const MARKETING_BASE = 'appfD8DRo3FMFuT8U';
+const LEADS_TABLE = 'Leads';
+/* Set these as Worker SECRETS once the Meta app exists (wrangler secret put):
+   env.META_VERIFY_TOKEN  — any string you choose; must match the value you
+                            type into the Meta webhook config screen.
+   env.META_APP_SECRET    — from Meta App dashboard, to verify payload signature.
+   env.IG_PAGE_TOKEN      — long-lived IG/Page access token for sending the auto-DM.
+   KEYWORD_MAP below = which commented keyword triggers which DM + which post. */
+const KEYWORD_MAP = {
+  // 'RESET':  { dm: 'Here is your free guide: <link>', post: 'Topic1-reset' },
+  // 'ANIMATE':{ dm: '...', post: '...' },
+};
+
 const ALLOWED_ORIGIN = '*';
 
 // OTP settings (4-digit, 10-minute expiry)
@@ -743,6 +759,88 @@ export default {
           clientId,
           lines: (linesData.records || []).length,
         });
+      }
+
+      /* ============================================================
+         MARKETING WEBHOOK — Instagram/Facebook comment-to-DM funnel
+         STATUS: DORMANT. Code-ready; goes live only after the Meta app
+         is created and Instagram Private Replies / template are approved.
+         ============================================================ */
+
+      // (A) Meta webhook VERIFICATION handshake (GET, one-time when you
+      //     register the callback URL in the Meta App dashboard).
+      if (request.method === 'GET' && url.pathname === '/meta-webhook') {
+        const mode = url.searchParams.get('hub.mode');
+        const token = url.searchParams.get('hub.verify_token');
+        const challenge = url.searchParams.get('hub.challenge');
+        if (mode === 'subscribe' && token === (env.META_VERIFY_TOKEN || '')) {
+          return new Response(challenge || '', { status: 200, headers: cors() });
+        }
+        return new Response('Forbidden', { status: 403, headers: cors() });
+      }
+
+      // (B) Meta COMMENT event (POST). Meta sends this when someone comments.
+      //     We match the comment text against KEYWORD_MAP, write a lead row,
+      //     and (once IG_PAGE_TOKEN is set) fire the one allowed Private Reply DM.
+      if (request.method === 'POST' && url.pathname === '/meta-webhook') {
+        let body;
+        try { body = await request.json(); } catch { return json({ ok: false, error: 'bad json' }, 400); }
+
+        // Meta payload shape: entry[].changes[].value { text, from, media_id, comment_id }
+        const entries = Array.isArray(body.entry) ? body.entry : [];
+        const results = [];
+        for (const entry of entries) {
+          const changes = Array.isArray(entry.changes) ? entry.changes : [];
+          for (const ch of changes) {
+            const v = (ch && ch.value) || {};
+            const text = (v.text || '').trim();
+            if (!text) continue;
+            // case-insensitive keyword match (whole-word-ish)
+            const upper = text.toUpperCase();
+            const hitKey = Object.keys(KEYWORD_MAP).find(k => upper.includes(k.toUpperCase()));
+            if (!hitKey) continue;
+
+            const cfg = KEYWORD_MAP[hitKey] || {};
+            const handle = (v.from && (v.from.username || v.from.name || v.from.id)) || 'unknown';
+
+            // 1) Write the lead into FTF Marketing > Leads
+            const leadFields = {
+              'Lead Handle': String(handle),
+              'Source': (body.object === 'instagram') ? 'Instagram' : 'Facebook',
+              'Trigger Keyword': hitKey,
+              'Trigger Post': cfg.post || (v.media_id || ''),
+              'Status': 'New',
+            };
+            let leadWrite = { ok: false };
+            try {
+              const r = await fetch(
+                `https://api.airtable.com/v0/${MARKETING_BASE}/${encodeURIComponent(LEADS_TABLE)}`,
+                { method: 'POST', headers: { ...authHeader, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ records: [{ fields: leadFields }], typecast: true }) }
+              );
+              leadWrite = { ok: r.ok };
+            } catch (e) { leadWrite = { ok: false, err: e.message }; }
+
+            // 2) Send the ONE allowed Private Reply DM (only if token + comment_id present)
+            let dmSent = false;
+            if (env.IG_PAGE_TOKEN && v.comment_id && cfg.dm) {
+              try {
+                const dmRes = await fetch(
+                  `https://graph.facebook.com/v21.0/${v.comment_id}/private_replies?access_token=${env.IG_PAGE_TOKEN}`,
+                  { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: cfg.dm }) }
+                );
+                dmSent = dmRes.ok;
+                if (dmSent && leadWrite.ok) {
+                  // best-effort: mark DM Sent (skipped here to keep one write; upgrade later)
+                }
+              } catch (e) { /* swallow — lead is already captured */ }
+            }
+            results.push({ keyword: hitKey, handle, lead: leadWrite.ok, dm: dmSent });
+          }
+        }
+        // Meta requires a fast 200 or it retries/disables the webhook.
+        return json({ ok: true, processed: results.length, results });
       }
 
       return new Response('Not found', { status: 404, headers: cors() });

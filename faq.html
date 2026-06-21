@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FAQ · Flare to Flame</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Jost:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;color:#FAF7F2;}
+
+.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.amb::before{content:'';position:absolute;right:-60px;top:40px;width:320px;height:580px;background:radial-gradient(ellipse at 55% 35%,rgba(130,55,175,0.18) 0%,rgba(90,25,135,0.07) 45%,transparent 70%);filter:blur(45px);animation:drift 10s ease-in-out infinite alternate;}
+.amb::after{content:'';position:absolute;left:-40px;bottom:60px;width:260px;height:400px;background:radial-gradient(ellipse at 40% 60%,rgba(201,168,76,0.14) 0%,rgba(201,168,76,0.05) 50%,transparent 72%);filter:blur(50px);animation:drift2 13s ease-in-out infinite alternate;}
+@keyframes drift{0%{transform:translateY(0) scale(1);}100%{transform:translateY(-22px) scale(1.06);}}
+@keyframes drift2{0%{transform:translateY(0) scale(1);}100%{transform:translateY(18px) scale(1.08);}}
+
+.wrap{position:relative;z-index:1;max-width:420px;margin:0 auto;padding:54px 24px 80px;}
+
+.top-back{display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(250,247,242,0.5);text-decoration:none;font-weight:500;margin-bottom:30px;transition:color .2s;}
+.top-back:hover{color:#C9A84C;}
+.top-back svg{width:14px;height:14px;fill:currentColor;}
+
+.head-eyebrow{font-size:9px;letter-spacing:5px;color:#C9A84C;text-transform:uppercase;font-weight:600;margin-bottom:12px;opacity:0.85;}
+.head-title{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;color:#FAF7F2;line-height:1.0;letter-spacing:-1px;margin-bottom:12px;}
+.head-sub{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:rgba(201,168,76,0.9);line-height:1.4;margin-bottom:38px;}
+
+.faq-item{border-bottom:1px solid rgba(201,168,76,0.16);}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;background:none;border:none;cursor:pointer;text-align:left;padding:20px 2px;font-family:'Jost',sans-serif;font-size:15px;font-weight:500;color:#FAF7F2;letter-spacing:0.2px;line-height:1.35;-webkit-tap-highlight-color:transparent;}
+.faq-q:hover{color:#E8C96A;}
+.faq-icon{flex-shrink:0;width:22px;height:22px;position:relative;}
+.faq-icon::before,.faq-icon::after{content:'';position:absolute;background:#C9A84C;border-radius:2px;transition:transform .3s cubic-bezier(0.16,1,0.3,1),opacity .3s;}
+.faq-icon::before{top:50%;left:3px;right:3px;height:2px;transform:translateY(-50%);}
+.faq-icon::after{left:50%;top:3px;bottom:3px;width:2px;transform:translateX(-50%);}
+.faq-item.open .faq-icon::after{transform:translateX(-50%) scaleY(0);opacity:0;}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(0.16,1,0.3,1);}
+.faq-a-inner{padding:0 2px 22px;font-family:'Jost',sans-serif;font-size:13.5px;font-weight:300;line-height:1.65;color:rgba(250,247,242,0.72);}
+.faq-a-inner a{color:#C9A84C;text-decoration:none;border-bottom:1px solid rgba(201,168,76,0.4);}
+.faq-a-inner .soon{display:inline-block;margin-left:8px;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:#0a0805;background:linear-gradient(135deg,#d4af37,#b89326);padding:3px 8px;border-radius:6px;font-weight:700;vertical-align:middle;}
+
+.faq-cta{margin-top:44px;text-align:center;}
+.faq-cta-line{font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;color:rgba(250,247,242,0.6);margin-bottom:18px;}
+.faq-cta-btn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#d4af37,#b89326);color:#fff;padding:14px 30px;border-radius:13px;font-family:'Jost',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-decoration:none;box-shadow:0 8px 30px rgba(180,140,30,0.4);transition:transform .2s ease;}
+.faq-cta-btn:hover{transform:translateY(-2px);}
+.faq-cta-btn svg{width:18px;height:18px;fill:#fff;}
+
+.faq-foot{margin-top:54px;text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(250,247,242,0.3);}
+</style>
+</head>
+<body>
+<div class="amb"></div>
+<div class="wrap">
+
+  <a class="top-back" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg>
+    Back to Home
+  </a>
+
+  <div class="head-eyebrow">Good to Know</div>
+  <h1 class="head-title">Questions,<br>Answered.</h1>
+  <div class="head-sub">Everything you might wonder before your first visit.</div>
+
+  <div class="faq-list" id="faqList">
+
+    <div class="faq-item">
+      <button class="faq-q">Where is Flare to Flame located?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">We're a luxury unisex salon in Rajnagar Extension, Ghaziabad, NCR. For directions, message us on <a href="https://wa.me/919718831333" target="_blank">WhatsApp</a> and we'll guide you in.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">How do I book an appointment?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">Tap "Begin Your Experience" on our app, or message us directly on <a href="https://wa.me/919718831333" target="_blank">WhatsApp</a>. We'll confirm your slot personally.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">What services do you offer?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">Hair, skin, makeup and more — a full range of styling, care and grooming services for all genders. Browse the full list inside the app.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">Do you serve both men and women?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">Yes. Flare to Flame is a unisex salon — everyone is welcome.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">What are your timings?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">We operate by appointment. Message us on <a href="https://wa.me/919718831333" target="_blank">WhatsApp</a> to find a time that suits you.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">How much do your services cost?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">Pricing is shared at the time of booking or consultation, so we can recommend exactly what suits you. Message us on <a href="https://wa.me/919718831333" target="_blank">WhatsApp</a> for details.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">Can I get a consultation before deciding?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">Absolutely. Use "Consult Now" in the app or message us on <a href="https://wa.me/919718831333" target="_blank">WhatsApp</a> — we'll talk through what your hair or skin needs before anything is booked.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">How will I receive booking confirmations?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">Through WhatsApp. Once you book, we confirm and send reminders so you never miss your slot.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">Is my personal information safe?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">Yes. We only collect your name and phone number to manage your booking, stored securely, never sold. Your privacy is respected at every step.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q">Do you offer rewards or loyalty benefits?<span class="faq-icon"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">A loyalty experience is on its way.<span class="soon">Coming Soon</span></div></div>
+    </div>
+
+  </div>
+
+  <div class="faq-cta">
+    <div class="faq-cta-line">Still have a question?</div>
+    <a class="faq-cta-btn" href="https://wa.me/919718831333" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>
+      Ask on WhatsApp
+    </a>
+  </div>
+
+  <div class="faq-foot">Because Details Define You</div>
+
+</div>
+
+<script>
+document.querySelectorAll('.faq-q').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var item = btn.parentElement;
+    var ans = btn.nextElementSibling;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(function(o){
+      o.classList.remove('open');
+      o.querySelector('.faq-a').style.maxHeight = null;
+    });
+    if(!isOpen){
+      item.classList.add('open');
+      ans.style.maxHeight = ans.scrollHeight + 'px';
+    }
+  });
+});
+</script>
+</body>
+</html>

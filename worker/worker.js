@@ -74,6 +74,11 @@ function cors() {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    // Security headers (safe set — no CSP, so nothing can break Sentry/PostHog/images):
+    'X-Content-Type-Options': 'nosniff',                       // no MIME-type guessing
+    'X-Frame-Options': 'DENY',                                 // block clickjacking via iframes
+    'Referrer-Policy': 'strict-origin-when-cross-origin',      // limit URL leakage to third parties
+    'X-XSS-Protection': '0',                                   // modern-correct (old '1' is deprecated)
   };
 }
 

@@ -84,6 +84,25 @@ function json(body, status = 200) {
   });
 }
 
+/* ── B1: CACHING ──
+   Cloudflare's edge already gzip/brotli-compresses responses automatically
+   (no manual gzip needed). What was missing: Cache-Control. Without it every
+   visit re-hits Airtable's ~5 req/sec API. These read endpoints (services,
+   offers, team) change rarely, so we cache them at the edge + in the browser.
+   READ_CACHE_SECONDS is the one knob: a menu edit in Airtable shows within
+   this window. 60s is a safe default for a 61-item menu. */
+const READ_CACHE_SECONDS = 60;
+
+function cachedJson(payload, seconds = READ_CACHE_SECONDS) {
+  return new Response(JSON.stringify(payload), {
+    headers: {
+      ...cors(),
+      'Content-Type': 'application/json',
+      'Cache-Control': `public, max-age=${seconds}, s-maxage=${seconds}`,
+    },
+  });
+}
+
 // Normalize a phone to digits only ("+91 97188 31333" -> "919718831333")
 function normalizePhone(p) {
   return String(p || '').replace(/[^0-9]/g, '');
@@ -156,7 +175,7 @@ async function computeAvailability(env, authHeader, staffId, startISO, durationM
   const apptUrl =
     `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(APPOINTMENTS_TABLE)}` +
     `?filterByFormula=${encodeURIComponent(formula)}` +
-    `&fields%5B%5D=Start%20Time&fields%5B%5D=Booking%20Lines&fields%5B%5D=Status&pageSize=100`;
+    `&fields%5B%5D=Start%20Time&fields%5B%5D=Booking%20Lines&fields%5B%5D=Status&fields%5B%5D=Total%20Duration&pageSize=100`;
   const apptRes = await fetch(apptUrl, { headers: authHeader });
   const apptData = await apptRes.json();
   const appts = apptData.records || [];
@@ -165,14 +184,19 @@ async function computeAvailability(env, authHeader, staffId, startISO, durationM
     return { available: true, clashes: [] };
   }
 
-  // 2. Collect every Booking Line id across these appts to sum durations.
+  // B3: New bookings store Total Duration on the appointment, so the engine
+  // reads it directly — no second call. Only LEGACY appointments (booked
+  // before this field existed) still need the Booking Lines lookup.
   const lineIds = [];
   appts.forEach(a => {
-    const links = (a.fields && a.fields['Booking Lines']) || [];
+    const f = a.fields || {};
+    const hasStored = Number(f['Total Duration']) > 0;
+    if (hasStored) return; // already have duration; skip line lookup for this appt
+    const links = f['Booking Lines'] || [];
     links.forEach(id => lineIds.push(id));
   });
 
-  // Map lineId -> duration. One batched read of Booking Lines.
+  // Map lineId -> duration. One batched read of Booking Lines (legacy rows only).
   const lineDur = {};
   if (lineIds.length > 0) {
     const orParts = lineIds.map(id => `RECORD_ID()='${id}'`).join(',');
@@ -195,11 +219,17 @@ async function computeAvailability(env, authHeader, staffId, startISO, durationM
     if (!st) return; // no real timestamp -> can't clash-check, skip
     const exStart = new Date(st).getTime();
     if (isNaN(exStart)) return;
-    const links = (a.fields && a.fields['Booking Lines']) || [];
-    let summed = 0;
-    links.forEach(id => { summed += lineDur[id] || 0; });
-    // If an appt has no lines/duration yet, treat as 30 min minimum block
-    const exDur = summed > 0 ? summed : 30;
+    const f = a.fields || {};
+    // B3: prefer the stored Total Duration; fall back to summed legacy lines.
+    let exDur = Number(f['Total Duration']) || 0;
+    if (exDur <= 0) {
+      const links = f['Booking Lines'] || [];
+      let summed = 0;
+      links.forEach(id => { summed += lineDur[id] || 0; });
+      exDur = summed;
+    }
+    // If an appt still has no duration, treat as 30 min minimum block
+    if (exDur <= 0) exDur = 30;
     const exEnd = exStart + exDur * 60000;
     if (intervalsOverlap(newStart, newEnd, exStart, exEnd)) {
       clashes.push({
@@ -245,9 +275,7 @@ export default {
           { headers: authHeader }
         );
         const data = await r.json();
-        return new Response(JSON.stringify(data), {
-          headers: { ...cors(), 'Content-Type': 'application/json' },
-        });
+        return cachedJson(data); // B1: edge+browser cache, 60s
       }
 
       // ---- 2. READ STAFF ----
@@ -273,9 +301,7 @@ export default {
           { headers: authHeader }
         );
         const data = await r.json();
-        return new Response(JSON.stringify(data), {
-          headers: { ...cors(), 'Content-Type': 'application/json' },
-        });
+        return cachedJson(data); // B1: edge+browser cache, 60s
       }
 
       // ---- 4. WRITE FEEDBACK ----
@@ -476,7 +502,7 @@ export default {
             photo: photo,
           };
         });
-        return json({ team });
+        return cachedJson({ team }); // B1: edge+browser cache, 60s
       }
 
       // ---- 9. STAFF STATUS (who is available) ----
@@ -677,6 +703,16 @@ export default {
           return json({ ok: false, error: 'Slot no longer available', clashes: check.clashes || [] }, 409);
         }
 
+        // B2: IDEMPOTENCY LOCK — stop a double-tapped "Confirm" from creating
+        // two appointments. Same client + same staff + same start = one booking.
+        // The lock lives 30s in KV; the real clash engine guards anything longer.
+        const bookingKey = 'booklock:' + clientPhone + ':' + staffId + ':' + startISO;
+        const already = await env.OTP_KV.get(bookingKey);
+        if (already) {
+          return json({ ok: false, error: 'This booking is already being processed.' }, 409);
+        }
+        await env.OTP_KV.put(bookingKey, '1', { expirationTtl: 30 });
+
         // 1. Find or auto-create the Client by last-10 phone match.
         let clientId = null;
         const cRes = await fetch(
@@ -704,6 +740,7 @@ export default {
           );
           const newCData = await newC.json();
           if (!newC.ok) {
+            await env.OTP_KV.delete(bookingKey); // B2: nothing was created — free the lock for retry
             return json({ ok: false, error: 'Could not create client', detail: newCData }, 400);
           }
           clientId = newCData.records[0].id;
@@ -718,6 +755,7 @@ export default {
           'Date': isoToDateStr(startISO),
           'Start Time': startISO,
           'Status': 'Booked',
+          'Total Duration': totalDuration, // B3: stored so the clash engine reads it in ONE call (no Booking Lines lookup)
         };
         if (timeSlot) apptFields['Time Slot'] = timeSlot;
 
@@ -731,6 +769,7 @@ export default {
         );
         const apptData = await apptRes.json();
         if (!apptRes.ok) {
+          await env.OTP_KV.delete(bookingKey); // B2: appointment not created — free the lock for retry
           return json({ ok: false, error: 'Could not create appointment', detail: apptData }, 400);
         }
         const appointmentRecId = apptData.records[0].id;

@@ -2,6 +2,28 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
+<!-- ============================================================
+     SENTRY — crash tracking (EU region). Session Replay OFF.
+     Text masked as belt-and-suspenders. Release tag set.
+     ▸ Before deploy: replace https://716b22d13cb97872295e67cbdcb51cd5@o4511612908929024.ingest.de.sentry.io/4511613083254864 with the real DSN.
+     ============================================================ -->
+<script src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js" crossorigin="anonymous"></script>
+<script>
+  if (window.Sentry) {
+    Sentry.init({
+      dsn: "https://716b22d13cb97872295e67cbdcb51cd5@o4511612908929024.ingest.de.sentry.io/4511613083254864",
+      release: "ftf-app@2026-06-23",
+      // Session Replay fully OFF (locked decision: no screen recording of customer data)
+      replaysSessionSampleRate: 0,
+      replaysOnErrorSampleRate: 0,
+      // Belt-and-suspenders: if replay were ever enabled, names/phones stay masked
+      integrations: [],
+      // Catch all uncaught errors; sample 100% of errors (free tier is plenty)
+      sampleRate: 1.0
+    });
+  }
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Flare to Flame — स्टाफ</title>
 <style>

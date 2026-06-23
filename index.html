@@ -626,86 +626,56 @@ var CAT_TICKER = {
   packages:  { lines: ['<span class="ft-gold">The complete experience.</span> Everything your beauty needs — thoughtfully combined.', 'More than savings. <span class="ft-gold">A complete ritual, curated for you.</span>', '<span class="ft-gold">True transformation takes layers.</span> Our packages give you every one of them.'] }
 };
 
-/* ── HERO TICKER ── */
-var heroTickerIndex = 0;
-var heroTickerCat = 'all';
-var heroTickerTimer = null;
-
+/* ── TICKER ENGINE (one engine, three callers) ──
+   Collapsed from 3 near-identical ticker functions. Each ticker is just
+   an element + an animation name; this runs the shared fade-rotate loop.
+   Public names startHeroTicker / showFilterTicker / showCatFlicker are kept
+   as thin wrappers because they're called from 6 places. */
 function getHeroMessages(cat) {
   return (CAT_TICKER[cat] || CAT_TICKER['all']).lines;
 }
 
-function rotateHeroTicker(cat) {
-  var el = document.getElementById('heroTickerMsg');
+var tickerTimers = {}; // one timer slot per element id
+
+function runTicker(elId, cat, anim) {
+  var el = document.getElementById(elId);
   if (!el) return;
   var msgs = getHeroMessages(cat);
-  heroTickerIndex = (heroTickerIndex + 1) % msgs.length;
-  el.style.animation = 'none';
-  el.offsetHeight;
-  el.innerHTML = msgs[heroTickerIndex];
-  el.style.animation = 'tickerFade 6s ease-in-out infinite';
+  var i = 0;
+  function paint() {
+    el.style.animation = 'none';
+    el.offsetHeight; // force reflow so the animation restarts
+    el.innerHTML = msgs[i];
+    el.style.animation = anim + ' 6s ease-in-out infinite';
+  }
+  paint();
+  if (tickerTimers[elId]) clearInterval(tickerTimers[elId]);
+  tickerTimers[elId] = setInterval(function() {
+    i = (i + 1) % msgs.length;
+    paint();
+  }, 6000);
 }
 
+/* Hero ticker (bottom of hero) */
 function startHeroTicker(cat) {
-  heroTickerCat = cat || 'all';
-  heroTickerIndex = 0;
-  var el = document.getElementById('heroTickerMsg');
-  if (!el) return;
-  var msgs = getHeroMessages(heroTickerCat);
-  el.style.animation = 'none';
-  el.offsetHeight;
-  el.innerHTML = msgs[0];
-  el.style.animation = 'tickerFade 6s ease-in-out infinite';
-  if (heroTickerTimer) clearInterval(heroTickerTimer);
-  heroTickerTimer = setInterval(function() { rotateHeroTicker(heroTickerCat); }, 6000);
+  runTicker('heroTickerMsg', cat || 'all', 'tickerFade');
 }
 
-/* ── FILTER TICKER ── */
-var filterTickerIndex = 0;
-var filterTickerTimer = null;
-
+/* Filter ticker (hidden on 'all', shown otherwise) */
 function showFilterTicker(cat) {
+  var box = document.getElementById('filterTickerBox');
   if (cat === 'all') {
-    document.getElementById('filterTickerBox').classList.add('hidden');
-    if (filterTickerTimer) clearInterval(filterTickerTimer);
+    if (box) box.classList.add('hidden');
+    if (tickerTimers['filterTickerText']) clearInterval(tickerTimers['filterTickerText']);
     return;
   }
-  var msgs = (CAT_TICKER[cat] || CAT_TICKER['all']).lines;
-  filterTickerIndex = 0;
-  var box = document.getElementById('filterTickerBox');
-  var txt = document.getElementById('filterTickerText');
-  box.classList.remove('hidden');
-  txt.style.animation = 'none';
-  txt.offsetHeight;
-  txt.innerHTML = msgs[0];
-  txt.style.animation = 'flickFade 6s ease-in-out infinite';
-  if (filterTickerTimer) clearInterval(filterTickerTimer);
-  filterTickerTimer = setInterval(function() {
-    filterTickerIndex = (filterTickerIndex + 1) % msgs.length;
-    txt.style.animation = 'none';
-    txt.offsetHeight;
-    txt.innerHTML = msgs[filterTickerIndex];
-    txt.style.animation = 'flickFade 6s ease-in-out infinite';
-  }, 6000);
+  if (box) box.classList.remove('hidden');
+  runTicker('filterTickerText', cat, 'flickFade');
 }
 
-/* ── CATEGORY HEADER FLICKER (Stage 2) ── */
-var catFlickerIndex = 0, catFlickerTimer = null;
+/* Category header flicker (Stage 2) */
 function showCatFlicker(cat) {
-  var el = document.getElementById('catFlicker');
-  if (!el) return;
-  var msgs = (CAT_TICKER[cat] || CAT_TICKER['all']).lines;
-  catFlickerIndex = 0;
-  el.style.animation = 'none'; el.offsetHeight;
-  el.innerHTML = msgs[0];
-  el.style.animation = 'flickFade 6s ease-in-out infinite';
-  if (catFlickerTimer) clearInterval(catFlickerTimer);
-  catFlickerTimer = setInterval(function() {
-    catFlickerIndex = (catFlickerIndex + 1) % msgs.length;
-    el.style.animation = 'none'; el.offsetHeight;
-    el.innerHTML = msgs[catFlickerIndex];
-    el.style.animation = 'flickFade 6s ease-in-out infinite';
-  }, 6000);
+  runTicker('catFlicker', cat, 'flickFade');
 }
 
 /* ── CATEGORY CONFIG ── */
@@ -718,6 +688,7 @@ var CAT_MAP = {
   'Threading': {key:'threading', label:'Threading', cat:'Precision Studio',     catColor:'#3a3a5a', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/threading_cmm20k.jpg', imgPos:'22% center', overlayLight:true},
   'Grooming':  {key:'grooming',  label:'Grooming',  cat:"Men's Grooming",       catColor:'#4682B4', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/grooming_qid5gs.jpg',  imgPos:'18% center', overlayLight:false},
   'Signature': {key:'signature', label:'Signature & Packages', cat:'Signature Experience', catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false},
+  // DORMANT-UNTIL-LIVE: kept wired so Package services auto-activate when added to Airtable (same pattern as hero banners + price gate). renderCatBoxes() hides it while service count = 0.
   'Packages':  {key:'signature', label:'Signature & Packages', cat:'Signature Experience', catColor:'#C9A84C', img:'https://res.cloudinary.com/dlstvhspu/image/upload/v1780140483/signature_wkkoc1.jpg', imgPos:'20% center', overlayLight:false}
 };
 
@@ -731,10 +702,6 @@ function fv(field) {
 var SERVICES = [];
 
 function mapRecords(all) {
-  if (all && all[0] && all[0].fields) {
-    console.log('AIRTABLE FIELD NAMES →', Object.keys(all[0].fields));
-    console.log('FIRST RECORD →', all[0].fields);
-  }
   return all.map(function(r, i) {
     var f = r.fields;
     var catKey = fv(f['Category']) || 'Hair';
@@ -781,7 +748,7 @@ async function loadFromAirtable() {
 var PER_PAGE = 5, currentPage = 1, openCards = {};
 var activeCat = '', activeSub = '';
 
-var CAT_ORDER = ['Hair','Skin','Makeup','Nail','Waxing','Threading','Grooming','Signature'];
+var CAT_ORDER = ['Hair','Skin','Makeup','Nail','Waxing','Threading','Grooming','Signature','Packages'];
 
 function catCount(catName) {
   var cm = CAT_MAP[catName]; if (!cm) return 0;

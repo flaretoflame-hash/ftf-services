@@ -417,7 +417,11 @@ document.querySelectorAll('.avail-btn').forEach(btn => {
     const token = sessionStorage.getItem('ftf_token');
     if (!token) { logout(); return; }
 
-    document.querySelectorAll('.avail-btn').forEach(b => b.disabled = true);
+    // B4: OPTIMISTIC — highlight the tapped button instantly, then confirm in
+    // the background. Remember the previous selection so we can roll back.
+    const prevSel = document.querySelector('.avail-btn.sel');
+    document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
     setMsg('msgAvail', 'सेव हो रहा है…');
 
     try {
@@ -428,20 +432,21 @@ document.querySelectorAll('.avail-btn').forEach(btn => {
       });
       const res = await r.json();
       if (res.ok) {
-        document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('sel'));
-        btn.classList.add('sel');
         setMsg('msgAvail', 'आपकी स्थिति सेव हो गई ✓', 'ok');
         loadStatus();
       } else if (r.status === 401) {
         setMsg('msgAvail', 'सेशन खत्म हो गया। दोबारा लॉगिन करें।', 'err');
         setTimeout(logout, 1500);
       } else {
+        document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('sel'));
+        if (prevSel) prevSel.classList.add('sel');
         setMsg('msgAvail', 'सेव नहीं हुआ। फिर कोशिश करें।', 'err');
       }
     } catch (e) {
+      document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('sel'));
+      if (prevSel) prevSel.classList.add('sel');
       setMsg('msgAvail', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
     }
-    document.querySelectorAll('.avail-btn').forEach(b => b.disabled = false);
   });
 });
 

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Current Offers — Flare to Flame</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#C9A84C;
+    --offwhite:#FAF7F2;
+    --bg1:#0a0805;
+    --bg2:#14100a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:radial-gradient(120% 80% at 50% 0%, #16110a 0%, #0a0805 60%);
+    min-height:100vh;color:var(--offwhite);
+    font-family:'Jost',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 18px;}
+
+  /* ── HEADER ── */
+  .top{display:flex;align-items:center;justify-content:space-between;padding:22px 0 8px;}
+  .back{font-family:'Jost',sans-serif;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(201,168,76,0.8);text-decoration:none;transition:color .2s;}
+  .back:hover{color:var(--offwhite);}
+  .brandmini{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--offwhite);}
+
+  /* ── HERO ── */
+  .hero{text-align:center;padding:34px 0 26px;}
+  .hero-eyebrow{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:600;}
+  .hero-title{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;line-height:1.05;margin:10px 0 6px;letter-spacing:-0.5px;}
+  .hero-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:rgba(201,168,76,0.85);}
+  .hero-rule{width:54px;height:2px;background:var(--gold);margin:18px auto 0;}
+
+  /* ── OFFER CARDS ── */
+  .offers{display:flex;flex-direction:column;gap:18px;padding:8px 0 10px;}
+  .offer{
+    position:relative;overflow:hidden;
+    background:linear-gradient(160deg,#15110a,#0c0906);
+    border:1px solid rgba(201,168,76,0.28);
+    border-radius:20px;padding:24px 22px;
+    box-shadow:0 14px 40px rgba(0,0,0,0.45);
+    animation:cardIn .55s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes cardIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .offer::before{
+    content:'';position:absolute;inset:0;border-radius:20px;padding:1.5px;
+    background:linear-gradient(135deg,rgba(201,168,76,0.55),rgba(201,168,76,0) 45%,rgba(201,168,76,0.35));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+  }
+  .offer-tag{display:inline-block;font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;color:#E8C96A;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:5px 13px;margin-bottom:14px;}
+
+  /* ── STATE PILL (red = coming, green = now on) ── */
+  .offer-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px;}
+  .offer-head .offer-tag{margin-bottom:0;}
+  .state-pill{display:inline-flex;align-items:center;gap:5px;font-size:8.5px;letter-spacing:1.8px;text-transform:uppercase;font-weight:700;border-radius:20px;padding:5px 12px;}
+  .state-pill.live{color:#7BE3A0;background:rgba(60,200,120,0.12);border:1px solid rgba(60,200,120,0.4);animation:livePulse 2.4s ease-in-out infinite;}
+  .state-pill.coming{color:#F2A0A0;background:rgba(220,80,80,0.12);border:1px solid rgba(220,80,80,0.4);}
+  @keyframes livePulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
+  /* coming-soon cards are slightly dimmed so live ones pop */
+  .offer.is-coming{opacity:0.92;}
+  .offer.is-coming::before{background:linear-gradient(135deg,rgba(220,80,80,0.4),rgba(201,168,76,0) 50%,rgba(220,80,80,0.2));}
+  .offer-claim.soon{background:linear-gradient(100deg,#7a2e2e 38%,#d98a8a 50%,#7a2e2e 62%);background-size:220% auto;box-shadow:0 4px 16px rgba(150,40,40,0.35);color:#fff;}
+  .offer-title{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:700;line-height:1.12;color:var(--offwhite);}
+  .offer-discount{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--gold);margin-top:4px;}
+  .offer-desc{font-family:'Jost',sans-serif;font-weight:300;font-size:15px;line-height:1.65;color:rgba(250,247,242,0.78);margin-top:12px;}
+  .offer-valid{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:rgba(201,168,76,0.6);margin-top:14px;font-weight:500;}
+  .offer-claim{
+    display:inline-block;margin-top:18px;
+    font-family:'Jost',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    color:#2C2C2C;background:linear-gradient(100deg,#b89326 38%,#f1d77a 50%,#b89326 62%);background-size:220% auto;
+    border-radius:10px;padding:12px 24px;text-decoration:none;
+    box-shadow:0 4px 16px rgba(180,140,30,0.4);animation:shimmer 5s linear infinite;
+    transition:transform .2s ease;
+  }
+  .offer-claim:hover{transform:translateY(-2px);}
+  @keyframes shimmer{to{background-position:220% center;}}
+
+  /* ── STATES ── */
+  .state{text-align:center;padding:70px 20px;}
+  .state-icon{font-size:40px;margin-bottom:14px;}
+  .state-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;color:rgba(250,247,242,0.85);}
+  .state-sub{font-family:'Jost',sans-serif;font-size:14px;font-weight:300;color:rgba(250,247,242,0.5);margin-top:8px;line-height:1.6;}
+  .state-cta{display:inline-block;margin-top:22px;font-size:12px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:var(--gold);border:1px solid rgba(201,168,76,0.4);border-radius:10px;padding:12px 24px;text-decoration:none;transition:all .2s;}
+  .state-cta:hover{background:rgba(201,168,76,0.1);border-color:var(--gold);}
+  .spinner{width:34px;height:34px;border:2px solid rgba(201,168,76,0.2);border-top-color:var(--gold);border-radius:50%;margin:0 auto;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ── FOOTER (mini) ── */
+  .foot{border-top:1px solid rgba(201,168,76,0.18);margin-top:34px;padding:26px 0 40px;text-align:center;}
+  .foot-brand{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--offwhite);}
+  .foot-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--gold);margin-top:4px;}
+  .foot-links{margin-top:16px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;}
+  .foot-links a{font-size:12px;color:rgba(250,247,242,0.55);text-decoration:none;transition:color .2s;}
+  .foot-links a:hover{color:var(--offwhite);}
+  .foot-copy{font-size:9px;letter-spacing:1px;color:rgba(250,247,242,0.25);margin-top:20px;}
+
+  @media(max-width:380px){.hero-title{font-size:34px;}.offer-title{font-size:24px;}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <a class="back" href="index.html">← Home</a>
+      <span class="brandmini">Flare to Flame</span>
+    </div>
+
+    <div class="hero">
+      <div class="hero-eyebrow">Now On</div>
+      <h1 class="hero-title">Current Offers</h1>
+      <div class="hero-sub">Because details define you.</div>
+      <div class="hero-rule"></div>
+    </div>
+
+    <div id="offersRoot" class="offers">
+      <div class="state"><div class="spinner"></div></div>
+    </div>
+
+    <div class="foot">
+      <div class="foot-brand">Flare to Flame</div>
+      <div class="foot-tag">Start the Spark. Become the Flame.</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="https://wa.me/919718831333" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="https://instagram.com/flaretoflame" target="_blank" rel="noopener">Instagram</a>
+      </div>
+      <div class="foot-copy">© 2026 Flare to Flame</div>
+    </div>
+  </div>
+
+<script>
+  // Same Worker + same WhatsApp the app uses — single source of truth.
+  var WORKER_URL = 'https://ftf-airtable.flaretoflame.workers.dev';
+  var WA = 'https://wa.me/919718831333?text=';
+
+  // ---- helpers: mirror index.html exactly so behaviour is identical ----
+  function fv(v){ return (v === undefined || v === null) ? '' : v; }
+  function todayNumber(){
+    var d = new Date();
+    return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  }
+  function dayNumber(dateStr){
+    if(!dateStr) return 0;
+    var s = String(dateStr).slice(0,10);          // YYYY-MM-DD
+    var p = s.split('-');
+    if(p.length !== 3) return 0;
+    return (+p[0])*10000 + (+p[1])*100 + (+p[2]);
+  }
+  function offerIsLive(o){
+    if(o.active !== true) return false;
+    if(o.visible !== true) return false;
+    var today = todayNumber();
+    var from = dayNumber(o.from);
+    var to   = dayNumber(o.to);
+    if(!from && !to) return true;                 // no dates = live while Active+Visible
+    if(from && today < from) return false;
+    if(to && today > to) return false;
+    return true;
+  }
+  function mapOffer(r){
+    var f = r.fields || {};
+    return {
+      title:    fv(f['Offer Title']),
+      desc:     fv(f['Description']),
+      discount: fv(f['Discount Value']),
+      from:     fv(f['Valid From']),
+      to:       fv(f['Valid To']),
+      active:   (f['Active'] === true),
+      visible:  (f['Visible To Clients'] === true),
+      tag:      fv(f['Festival Tag']),
+      state:    fv(f['Offer State'])   // Airtable formula = single brain: Going On / Coming Up / Expired / Off
+    };
+  }
+
+  // Decide what shows on the page, reading Airtable's Offer State first (one brain),
+  // falling back to the date math only if Offer State is blank.
+  // Returns '' (hide), 'live', or 'coming'.
+  function displayState(o){
+    var s = String(o.state || '').toLowerCase();
+    if(s){
+      if(s === 'going on') return o.visible ? 'live' : '';
+      if(s === 'coming up') return o.visible ? 'coming' : '';
+      return ''; // Expired / Off → hide
+    }
+    // Fallback: no Offer State value → use the original date logic.
+    if(offerIsLive(o)) return 'live';
+    return '';
+  }
+
+  function fmtDate(d){
+    if(!d) return '';
+    var dt = new Date(String(d).slice(0,10) + 'T00:00:00');
+    if(isNaN(dt)) return '';
+    return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  }
+  function validLine(o){
+    var f = fmtDate(o.from), t = fmtDate(o.to);
+    if(f && t) return 'Valid ' + f + ' – ' + t;
+    if(t) return 'Valid until ' + t;
+    if(f) return 'From ' + f;
+    return 'Available now';
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function renderOffers(list){
+    var root = document.getElementById('offersRoot');
+    if(!list.length){
+      root.innerHTML =
+        '<div class="state">' +
+          '<div class="state-icon">✦</div>' +
+          '<div class="state-title">No live offers right now</div>' +
+          '<div class="state-sub">New rituals and seasonal offers are on the way.<br>Message us to hear first.</div>' +
+          '<a class="state-cta" href="' + WA + encodeURIComponent("Hi! Do you have any offers coming up?") + '" target="_blank" rel="noopener">Ask on WhatsApp</a>' +
+        '</div>';
+      return;
+    }
+    root.innerHTML = list.map(function(o,i){
+      var isComing = (o.ds === 'coming');
+      // RED = coming up, GREEN = now on (drives the state pill)
+      var statePill = isComing
+        ? '<span class="state-pill coming">● Coming Soon</span>'
+        : '<span class="state-pill live">● Now On</span>';
+      var tag = o.tag ? '<span class="offer-tag">' + esc(o.tag) + '</span>' : '';
+      var disc = o.discount ? '<div class="offer-discount">' + esc(o.discount) + '</div>' : '';
+      var desc = o.desc ? '<div class="offer-desc">' + esc(o.desc) + '</div>' : '';
+      // Coming-soon offers can't be claimed yet — show a soft "notify me" instead of claim.
+      var action = isComing
+        ? '<a class="offer-claim soon" href="' + WA + encodeURIComponent('Remind me about: ' + (o.title || 'your upcoming offer')) + '" target="_blank" rel="noopener">Notify Me →</a>'
+        : '<a class="offer-claim" href="' + WA + encodeURIComponent('I want to claim: ' + (o.title || 'your current offer')) + '" target="_blank" rel="noopener">Claim on WhatsApp →</a>';
+      return (
+        '<div class="offer ' + (isComing ? 'is-coming' : 'is-live') + '" style="animation-delay:' + (i*0.07) + 's">' +
+          '<div class="offer-head">' + statePill + tag + '</div>' +
+          '<div class="offer-title">' + esc(o.title || 'Special Offer') + '</div>' +
+          disc + desc +
+          '<div class="offer-valid">' + validLine(o) + '</div>' +
+          action +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  async function loadAllOffers(){
+    var root = document.getElementById('offersRoot');
+    try{
+      var res = await fetch(WORKER_URL + '/offers');
+      if(!res.ok) throw new Error('offers ' + res.status);
+      var data = await res.json();
+      var rows = (data.records || data.offers || []).map(mapOffer);
+      var show = [];
+      rows.forEach(function(o){
+        var ds = displayState(o);
+        if(ds === 'live' || ds === 'coming'){ o.ds = ds; show.push(o); }
+      });
+      show.sort(function(a,b){
+        if(a.ds !== b.ds) return a.ds === 'live' ? -1 : 1;
+        var ta = dayNumber(a.to), tb = dayNumber(b.to);
+        if(ta && tb) return ta - tb;
+        if(ta) return -1; if(tb) return 1; return 0;
+      });
+      renderOffers(show);
+    }catch(e){
+      root.innerHTML =
+        '<div class="state">' +
+          '<div class="state-icon">⚠</div>' +
+          '<div class="state-title">Couldn\'t load offers</div>' +
+          '<div class="state-sub">Please check your connection and try again.</div>' +
+          '<a class="state-cta" href="javascript:location.reload()">Retry</a>' +
+        '</div>';
+    }
+  }
+  loadAllOffers();
+</script>
+</body>
+</html>

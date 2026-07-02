@@ -905,14 +905,19 @@ export default {
           }
         }
 
+        // PERMISSION MATRIX (locked, App Details Notion page):
+        // Receptionist = Full Name. Any other staff role = First Name ONLY.
+        const firstNameOnly = s => String(s || 'Client').trim().split(/\s+/)[0] || 'Client';
+
         const appointments = records
           .map(rec => {
             const f = rec.fields || {};
             const cId = Array.isArray(f.Client) ? f.Client[0] : null;
+            const fullName = cId ? (clientNames[cId] || 'Client') : 'Client';
             return {
               appointmentId: rec.id,
               apptCode: f['Appointment ID'] || '',
-              clientName: cId ? (clientNames[cId] || 'Client') : 'Client',
+              clientName: (role === 'Receptionist') ? fullName : firstNameOnly(fullName),
               timeSlot: f['Time Slot'] || '',
               startTime: f['Start Time'] || '',
               duration: f['Total Duration'] || 0,
@@ -963,6 +968,166 @@ export default {
           return json({ ok: false, error: result }, 400);
         }
         return json({ ok: true, appointmentId: appointmentId, status: status });
+      }
+
+      // ====================================================
+      // BILLING (added 02 Jul 2026) — Receptionist-only checkout.
+      // Closes the gap: Bills table existed in Airtable with ZERO app
+      // code touching it. Commission (locked rule) can only trigger on
+      // Completed + Paid — this endpoint is what makes "Paid" real.
+      //
+      // ASSUMPTION (flagged, confirm with Buddy): discount is applied to
+      // the full MRP Total first; 18% GST is then charged only on the
+      // GST-Applicable services' share of the discounted total.
+      // If your real billing rule differs, tell me and this changes.
+      // ====================================================
+
+      // ---- 17. CREATE BILL ----
+      // POST /create-bill
+      // { sessionToken, appointmentId, discountType, tipAmount, paymentMode }
+      if (request.method === 'POST' && url.pathname === '/create-bill') {
+        const body = await request.json();
+        const sessionToken = String(body.sessionToken || '').trim();
+        const appointmentId = String(body.appointmentId || '').trim();
+        const discountType = String(body.discountType || 'None').trim();
+        const tipAmount = Number(body.tipAmount) || 0;
+        const paymentMode = String(body.paymentMode || 'Cash').trim();
+        const DISCOUNT_TYPES = ['None', '10%', '20%', '30%', 'Flat 100', 'Flat 200', 'Flat 500'];
+
+        if (!sessionToken) {
+          return json({ ok: false, error: 'Session token required' }, 401);
+        }
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) {
+          return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+        }
+        const role = (await env.OTP_KV.get('sess:role:' + sessionToken)) || '';
+        if (role !== 'Receptionist') {
+          return json({ ok: false, error: 'Only reception can create a bill' }, 403);
+        }
+        if (!appointmentId || DISCOUNT_TYPES.indexOf(discountType) === -1) {
+          return json({ ok: false, error: 'Invalid appointmentId or discountType' }, 400);
+        }
+
+        // 1. Pull the appointment (need Client + Staff + Booking Lines).
+        const apptRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(APPOINTMENTS_TABLE)}/${appointmentId}`,
+          { headers: authHeader }
+        );
+        const appt = await apptRes.json();
+        if (!apptRes.ok) {
+          return json({ ok: false, error: 'Appointment not found' }, 404);
+        }
+        const af = appt.fields || {};
+        const clientIds = af.Client || [];
+        const staffIds = af.Staff || [];
+        const lineIds = af['Booking Lines'] || [];
+        if (lineIds.length === 0) {
+          return json({ ok: false, error: 'No services on this booking — nothing to bill' }, 400);
+        }
+
+        // 2. Pull Booking Lines (Price At Booking + linked Service).
+        const linesFormula = encodeURIComponent(
+          'OR(' + lineIds.map(id => `RECORD_ID()='${id}'`).join(',') + ')'
+        );
+        const linesRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(BOOKING_LINES_TABLE)}` +
+            `?filterByFormula=${linesFormula}&fields%5B%5D=Price%20At%20Booking&fields%5B%5D=Service&pageSize=100`,
+          { headers: authHeader }
+        );
+        const linesData = await linesRes.json();
+        if (!linesRes.ok) {
+          return json({ ok: false, error: linesData }, 400);
+        }
+        const lineRecs = linesData.records || [];
+
+        // 3. Pull each linked Service's GST Applicable flag.
+        const serviceIds = [...new Set(lineRecs.flatMap(r => (r.fields && r.fields.Service) || []))];
+        let gstMap = {};
+        if (serviceIds.length > 0) {
+          const svcFormula = encodeURIComponent(
+            'OR(' + serviceIds.map(id => `RECORD_ID()='${id}'`).join(',') + ')'
+          );
+          const svcRes = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(SERVICES_TABLE)}` +
+              `?filterByFormula=${svcFormula}&fields%5B%5D=GST%20Applicable&pageSize=100`,
+            { headers: authHeader }
+          );
+          const svcData = await svcRes.json();
+          if (svcRes.ok) {
+            (svcData.records || []).forEach(r => { gstMap[r.id] = !!(r.fields && r.fields['GST Applicable']); });
+          }
+        }
+
+        // 4. Compute MRP Total + Taxable Total from the lines.
+        let mrpTotal = 0, taxableTotal = 0;
+        lineRecs.forEach(r => {
+          const price = Number(r.fields && r.fields['Price At Booking']) || 0;
+          mrpTotal += price;
+          const svcId = (r.fields && r.fields.Service && r.fields.Service[0]) || null;
+          if (svcId && gstMap[svcId]) taxableTotal += price;
+        });
+
+        // 5. Discount.
+        let discountAmount = 0;
+        if (discountType === '10%') discountAmount = mrpTotal * 0.10;
+        else if (discountType === '20%') discountAmount = mrpTotal * 0.20;
+        else if (discountType === '30%') discountAmount = mrpTotal * 0.30;
+        else if (discountType === 'Flat 100') discountAmount = 100;
+        else if (discountType === 'Flat 200') discountAmount = 200;
+        else if (discountType === 'Flat 500') discountAmount = 500;
+        discountAmount = Math.min(discountAmount, mrpTotal);
+        const discountedMrp = mrpTotal - discountAmount;
+
+        // 6. GST — 18%, only on the GST-applicable share, after discount.
+        const discountRatio = mrpTotal > 0 ? (discountedMrp / mrpTotal) : 0;
+        const taxableAfterDiscount = taxableTotal * discountRatio;
+        const gstAmount = Math.round(taxableAfterDiscount * 0.18);
+
+        // 7. Final.
+        const finalAmount = Math.round(discountedMrp + gstAmount + tipAmount);
+
+        // 8. Write the Bill.
+        const billId = 'BILL-' + Date.now();
+        const billRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Bills')}`,
+          {
+            method: 'POST',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              records: [{
+                fields: {
+                  'Bill ID': billId,
+                  'Client': clientIds,
+                  'Staff': staffIds,
+                  'MRP Total': Math.round(mrpTotal),
+                  'Discount Type': discountType,
+                  'Discount Amount': Math.round(discountAmount),
+                  'GST Amount': gstAmount,
+                  'Tip Amount': Math.round(tipAmount),
+                  'Final Amount': finalAmount,
+                  'Payment Mode': paymentMode,
+                  'Date': todayIST(),
+                },
+              }],
+              typecast: true,
+            }),
+          }
+        );
+        const billData = await billRes.json();
+        if (!billRes.ok) {
+          return json({ ok: false, error: billData }, 400);
+        }
+
+        return json({
+          ok: true,
+          billId: billId,
+          mrpTotal: Math.round(mrpTotal),
+          discountAmount: Math.round(discountAmount),
+          gstAmount: gstAmount,
+          tipAmount: Math.round(tipAmount),
+          finalAmount: finalAmount,
+        });
       }
 
       /* ============================================================

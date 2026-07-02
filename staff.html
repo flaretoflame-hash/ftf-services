@@ -228,6 +228,26 @@ input::placeholder { color: rgba(250,247,242,0.3); }
   font-family: 'Cormorant Garamond', serif;
   font-size: 19px; color: var(--gold);
 }
+.sched-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 0; border-bottom: 1px solid rgba(250,247,242,0.07);
+}
+.sched-row:last-child { border-bottom: none; }
+.sched-left { flex: 1; min-width: 0; }
+.sched-time { color: var(--gold); font-size: 13px; font-family: 'Tiro Devanagari Hindi', serif; }
+.sched-client { color: var(--offwhite); font-size: 15px; margin-top: 2px; }
+.sched-dur { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.badge {
+  font-size: 11px; padding: 5px 10px; border-radius: 20px; white-space: nowrap;
+  font-family: 'Tiro Devanagari Hindi', serif; border: 1px solid transparent;
+}
+.badge[data-s="Booked"]      { color: var(--amber); border-color: var(--amber); background: rgba(217,164,65,0.1); }
+.badge[data-s="In Progress"] { color: var(--gold);  border-color: var(--gold);  background: rgba(201,168,76,0.12); }
+.badge[data-s="Completed"]   { color: var(--green); border-color: var(--green); background: rgba(111,191,115,0.1); }
+.badge[data-s="Cancelled"], .badge[data-s="No Show"] { color: var(--red); border-color: var(--red); background: rgba(201,107,90,0.1); }
+.badge.tap { cursor: pointer; }
+.empty-note { color: var(--muted); font-size: 13px; text-align: center; padding: 14px 0; font-family: 'Tiro Devanagari Hindi', serif; }
+
 .row .info { flex: 1; min-width: 0; }
 .row .nm { font-size: 16px; font-weight: 500; }
 .row .rl { font-size: 13px; color: var(--muted); }
@@ -304,6 +324,11 @@ input::placeholder { color: rgba(250,247,242,0.3); }
     </div>
 
     <div class="card">
+      <h2 id="schedTitle">आज की बुकिंग</h2>
+      <div id="schedList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </div>
+
+    <div class="card">
       <h2>आज आपकी स्थिति</h2>
       <div class="avail-row" id="availRow">
         <button class="avail-btn" data-v="उपलब्ध"><span class="dot"></span>उपलब्ध</button>
@@ -348,8 +373,9 @@ function normalizePhone(p) { return String(p || '').replace(/[^0-9]/g, ''); }
 /* ---------------- SESSION RESTORE ---------------- */
 const savedToken = sessionStorage.getItem('ftf_token');
 const savedName = sessionStorage.getItem('ftf_name');
+const savedRole = sessionStorage.getItem('ftf_role');
 if (savedToken && savedName) {
-  openDashboard(savedName);
+  openDashboard(savedName, savedRole || '');
 }
 
 /* ---------------- STEP 1: SEND OTP ---------------- */
@@ -432,7 +458,8 @@ $('btnVerify').addEventListener('click', async () => {
     sessionStorage.setItem('ftf_token', res.sessionToken);
     sessionStorage.setItem('ftf_name', res.name);
     sessionStorage.setItem('ftf_id', res.id);
-    openDashboard(res.name);
+    sessionStorage.setItem('ftf_role', res.role || '');
+    openDashboard(res.name, res.role || '');
   } catch (e) {
     setMsg('msgOtp', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
   }
@@ -445,11 +472,13 @@ $('btnBack').addEventListener('click', () => {
 });
 
 /* ---------------- DASHBOARD ---------------- */
-function openDashboard(name) {
+function openDashboard(name, role) {
   hide('scrPhone'); hide('scrOtp'); show('scrDash');
   $('staffName').textContent = name;
+  $('schedTitle').textContent = (role === 'Receptionist') ? 'आज की सभी बुकिंग' : 'मेरी आज की बुकिंग';
   loadTeam();
   loadStatus();
+  loadSchedule(role);
 }
 
 /* availability buttons */
@@ -559,11 +588,72 @@ async function loadStatus() {
   }
 }
 
+/* ---------------- SCHEDULE (added 02 Jul 2026) ---------------- */
+const STATUS_CYCLE = ['Booked', 'In Progress', 'Completed', 'No Show', 'Cancelled'];
+const STATUS_HI = {
+  'Booked': 'बुक हुआ', 'In Progress': 'चल रहा है', 'Completed': 'पूरा हुआ',
+  'Cancelled': 'रद्द', 'No Show': 'नहीं आया'
+};
+
+async function loadSchedule(role) {
+  const token = sessionStorage.getItem('ftf_token');
+  const list = $('schedList');
+  if (!token) { list.innerHTML = '<div class="empty-note">लॉगिन ज़रूरी है</div>'; return; }
+  try {
+    const r = await fetch(API + '/day-schedule?sessionToken=' + encodeURIComponent(token));
+    const data = await r.json();
+    list.innerHTML = '';
+    if (!data.ok || !data.appointments || data.appointments.length === 0) {
+      list.innerHTML = '<div class="empty-note">आज कोई बुकिंग नहीं है</div>';
+      return;
+    }
+    const canEdit = (role === 'Receptionist');
+    data.appointments.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'sched-row';
+      const timeTxt = a.timeSlot || (a.startTime ? a.startTime.slice(11, 16) : '');
+      row.innerHTML =
+        '<div class="sched-left">' +
+          '<div class="sched-time">' + timeTxt + '</div>' +
+          '<div class="sched-client">' + a.clientName + '</div>' +
+          '<div class="sched-dur">' + (a.duration || 0) + ' मिनट</div>' +
+        '</div>' +
+        '<span class="badge' + (canEdit ? ' tap' : '') + '" data-s="' + a.status + '" data-id="' + a.appointmentId + '">' +
+          (STATUS_HI[a.status] || a.status) +
+        '</span>';
+      list.appendChild(row);
+    });
+
+    if (canEdit) {
+      list.querySelectorAll('.badge.tap').forEach(badge => {
+        badge.addEventListener('click', async () => {
+          const cur = badge.dataset.s;
+          const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
+          badge.textContent = STATUS_HI[next] || next; // optimistic
+          badge.dataset.s = next;
+          try {
+            const res = await fetch(API + '/update-appointment-status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionToken: token, appointmentId: badge.dataset.id, status: next })
+            });
+            const out = await res.json();
+            if (!out.ok) { loadSchedule(role); } // revert by reloading on failure
+          } catch (e) { loadSchedule(role); }
+        });
+      });
+    }
+  } catch (e) {
+    list.innerHTML = '<div class="empty-note">शेड्यूल लोड नहीं हुआ</div>';
+  }
+}
+
 /* logout */
 function logout() {
   sessionStorage.removeItem('ftf_token');
   sessionStorage.removeItem('ftf_name');
   sessionStorage.removeItem('ftf_id');
+  sessionStorage.removeItem('ftf_role');
   hide('scrDash'); show('scrPhone');
   $('phone').value = ''; $('otp').value = '';
   setMsg('msgPhone', ''); setMsg('msgAvail', '');

@@ -24,6 +24,12 @@
    POST /check-availability→ ONE-BRAIN clash engine (staff+start+duration)
    POST /create-booking    → writes Appointment + Booking Lines, auto-creates Client
 
+   NEW (v5 — 02 Jul 2026, receptionist + staff day view):
+   /verify-otp now also returns + stores Role (session KV 'sess:role:<token>')
+   GET  /day-schedule            → today's (or given date's) appointments.
+                                    Receptionist role = all; other roles = own only.
+   POST /update-appointment-status → Receptionist-only booking status change.
+
    Token stored as SECRET (env.AIRTABLE_TOKEN), never in the app.
    OTP + sessions stored in KV binding: env.OTP_KV
    ============================================================ */
@@ -147,6 +153,13 @@ function makeToken() {
 // Local YYYY-MM-DD for an ISO timestamp, used to match Appointments by Date.
 function isoToDateStr(iso) {
   return String(iso || '').slice(0, 10);
+}
+
+// Today's date as YYYY-MM-DD in IST (Cloudflare Workers run in UTC).
+// Used by /day-schedule when no explicit date is requested.
+function todayIST() {
+  const ist = new Date(Date.now() + 5.5 * 3600 * 1000);
+  return ist.toISOString().slice(0, 10);
 }
 
 // Two time intervals overlap if each starts before the other ends.
@@ -457,7 +470,7 @@ export default {
 
         // Find the staff record
         const r = await fetch(
-          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Phone&pageSize=100`,
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Phone&fields%5B%5D=Role&pageSize=100`,
           { headers: authHeader }
         );
         const data = await r.json();
@@ -469,9 +482,17 @@ export default {
           return json({ ok: false, error: 'Staff record not found' }, 404);
         }
 
-        // Issue session token (12h), stored in KV → value = staff record id
+        const role = (match.fields && match.fields.Role) ? match.fields.Role : '';
+
+        // Issue session token (12h), stored in KV → value = staff record id.
+        // ROLE (added 02 Jul 2026): stored under a separate 'sess:role:' key
+        // so the original session shape (sess:<token> -> staffId string) is
+        // untouched — /set-availability keeps working exactly as before.
         const sessionToken = makeToken();
         await env.OTP_KV.put('sess:' + sessionToken, match.id, {
+          expirationTtl: SESSION_TTL_SECONDS,
+        });
+        await env.OTP_KV.put('sess:role:' + sessionToken, role, {
           expirationTtl: SESSION_TTL_SECONDS,
         });
 
@@ -480,6 +501,7 @@ export default {
           verified: true,
           id: match.id,
           name: (match.fields && match.fields.Name) ? match.fields.Name : 'Staff',
+          role: role,
           sessionToken: sessionToken,
         });
       }
@@ -814,6 +836,133 @@ export default {
           clientId,
           lines: (linesData.records || []).length,
         });
+      }
+
+      // ====================================================
+      // RECEPTIONIST / STAFF SCHEDULE ROUTES (added 02 Jul 2026)
+      // ONE BRAIN: reads the same Appointments + Booking Lines data
+      // that /check-availability and /create-booking write to.
+      // ====================================================
+
+      // ---- 15. DAY SCHEDULE ----
+      // GET /day-schedule?sessionToken=...&date=YYYY-MM-DD (date optional, default = today IST)
+      // Receptionist role → sees ALL appointments for the day.
+      // Any other staff role → sees ONLY appointments they are assigned to.
+      if (request.method === 'GET' && url.pathname === '/day-schedule') {
+        const sessionToken = String(url.searchParams.get('sessionToken') || '').trim();
+        if (!sessionToken) {
+          return json({ ok: false, error: 'Session token required' }, 401);
+        }
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) {
+          return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+        }
+        const role = (await env.OTP_KV.get('sess:role:' + sessionToken)) || '';
+
+        const dateParam = String(url.searchParams.get('date') || '').trim();
+        const dateStr = /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : todayIST();
+
+        const formula = encodeURIComponent(`{Date}='${dateStr}'`);
+        const apptRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(APPOINTMENTS_TABLE)}` +
+            `?filterByFormula=${formula}&fields%5B%5D=Appointment%20ID&fields%5B%5D=Client&fields%5B%5D=Staff` +
+            `&fields%5B%5D=Time%20Slot&fields%5B%5D=Status&fields%5B%5D=Start%20Time&fields%5B%5D=Total%20Duration&pageSize=100`,
+          { headers: authHeader }
+        );
+        const apptData = await apptRes.json();
+        if (!apptRes.ok) {
+          return json({ ok: false, error: apptData }, 400);
+        }
+        let records = apptData.records || [];
+
+        // Non-receptionist roles see only their own appointments.
+        if (role !== 'Receptionist') {
+          records = records.filter(rec =>
+            Array.isArray(rec.fields && rec.fields.Staff) &&
+            rec.fields.Staff.indexOf(staffId) !== -1
+          );
+        }
+
+        // Resolve client names in one extra call (small daily volume — fine at this scale).
+        const clientIds = [...new Set(
+          records.flatMap(rec => (rec.fields && rec.fields.Client) || [])
+        )];
+        let clientNames = {};
+        if (clientIds.length > 0) {
+          const clientFormula = encodeURIComponent(
+            'OR(' + clientIds.map(id => `RECORD_ID()='${id}'`).join(',') + ')'
+          );
+          const cRes = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(CLIENTS_TABLE)}` +
+              `?filterByFormula=${clientFormula}&fields%5B%5D=Name&pageSize=100`,
+            { headers: authHeader }
+          );
+          const cData = await cRes.json();
+          if (cRes.ok) {
+            (cData.records || []).forEach(rec => {
+              clientNames[rec.id] = (rec.fields && rec.fields.Name) || 'Client';
+            });
+          }
+        }
+
+        const appointments = records
+          .map(rec => {
+            const f = rec.fields || {};
+            const cId = Array.isArray(f.Client) ? f.Client[0] : null;
+            return {
+              appointmentId: rec.id,
+              apptCode: f['Appointment ID'] || '',
+              clientName: cId ? (clientNames[cId] || 'Client') : 'Client',
+              timeSlot: f['Time Slot'] || '',
+              startTime: f['Start Time'] || '',
+              duration: f['Total Duration'] || 0,
+              status: f.Status || 'Booked',
+              isMine: Array.isArray(f.Staff) && f.Staff.indexOf(staffId) !== -1,
+            };
+          })
+          .sort((a, b) => String(a.startTime).localeCompare(String(b.startTime)));
+
+        return json({ ok: true, date: dateStr, role: role, appointments: appointments });
+      }
+
+      // ---- 16. UPDATE APPOINTMENT STATUS ----
+      // POST /update-appointment-status  { sessionToken, appointmentId, status }
+      // Receptionist-only (front-desk owns the day's status changes).
+      if (request.method === 'POST' && url.pathname === '/update-appointment-status') {
+        const body = await request.json();
+        const sessionToken = String(body.sessionToken || '').trim();
+        const appointmentId = String(body.appointmentId || '').trim();
+        const status = String(body.status || '').trim();
+        const ALLOWED_STATUS = ['Booked', 'In Progress', 'Completed', 'Cancelled', 'No Show'];
+
+        if (!sessionToken) {
+          return json({ ok: false, error: 'Session token required' }, 401);
+        }
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) {
+          return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+        }
+        const role = (await env.OTP_KV.get('sess:role:' + sessionToken)) || '';
+        if (role !== 'Receptionist') {
+          return json({ ok: false, error: 'Only reception can update booking status' }, 403);
+        }
+        if (!appointmentId || ALLOWED_STATUS.indexOf(status) === -1) {
+          return json({ ok: false, error: 'Invalid appointmentId or status' }, 400);
+        }
+
+        const r = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(APPOINTMENTS_TABLE)}/${appointmentId}`,
+          {
+            method: 'PATCH',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields: { 'Status': status }, typecast: true }),
+          }
+        );
+        const result = await r.json();
+        if (!r.ok) {
+          return json({ ok: false, error: result }, 400);
+        }
+        return json({ ok: true, appointmentId: appointmentId, status: status });
       }
 
       /* ============================================================

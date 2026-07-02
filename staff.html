@@ -247,6 +247,36 @@ input::placeholder { color: rgba(250,247,242,0.3); }
 .badge[data-s="Cancelled"], .badge[data-s="No Show"] { color: var(--red); border-color: var(--red); background: rgba(201,107,90,0.1); }
 .badge.tap { cursor: pointer; }
 .empty-note { color: var(--muted); font-size: 13px; text-align: center; padding: 14px 0; font-family: 'Tiro Devanagari Hindi', serif; }
+.bill-btn {
+  font-size: 11px; padding: 5px 10px; border-radius: 20px; margin-top: 6px;
+  border: 1px solid var(--gold); color: var(--gold); background: rgba(201,168,76,0.1);
+  font-family: 'Tiro Devanagari Hindi', serif; cursor: pointer; display: inline-block;
+}
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 50;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: var(--bg); border: 1px solid var(--card-border); border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px; padding: 22px 20px 28px; box-sizing: border-box;
+}
+.modal-box h3 { font-family: 'Tiro Devanagari Hindi', serif; color: var(--offwhite); font-size: 18px; margin: 0 0 14px; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; font-family: 'Tiro Devanagari Hindi', serif; }
+.modal-field select, .modal-field input {
+  width: 100%; box-sizing: border-box; background: rgba(250,247,242,0.06); color: var(--offwhite);
+  border: 1px solid rgba(250,247,242,0.18); border-radius: 10px; padding: 10px 12px; font-size: 15px;
+}
+.modal-summary { color: var(--gold); font-size: 14px; margin: 10px 0; font-family: 'Tiro Devanagari Hindi', serif; min-height: 18px; }
+.modal-btns { display: flex; gap: 10px; margin-top: 6px; }
+.modal-btns button {
+  flex: 1; padding: 13px; border-radius: 12px; border: none; font-size: 15px;
+  font-family: 'Tiro Devanagari Hindi', serif; cursor: pointer;
+}
+.modal-btns .cancel { background: rgba(250,247,242,0.08); color: var(--offwhite); }
+.modal-btns .confirm { background: var(--gold); color: #1A1A1A; font-weight: 600; }
+
 
 .row .info { flex: 1; min-width: 0; }
 .row .nm { font-size: 16px; font-weight: 500; }
@@ -351,6 +381,42 @@ input::placeholder { color: rgba(250,247,242,0.3); }
     <button class="logout" id="btnLogout">लॉग आउट करें</button>
   </div>
 
+</div>
+
+<!-- BILL MODAL (added 02 Jul 2026) -->
+<div class="modal-overlay hidden" id="billModal">
+  <div class="modal-box">
+    <h3>बिल बनाएं</h3>
+    <div class="modal-field">
+      <label>छूट (Discount)</label>
+      <select id="billDiscount">
+        <option value="None">कोई छूट नहीं</option>
+        <option value="10%">10%</option>
+        <option value="20%">20%</option>
+        <option value="30%">30%</option>
+        <option value="Flat 100">₹100 फ्लैट</option>
+        <option value="Flat 200">₹200 फ्लैट</option>
+        <option value="Flat 500">₹500 फ्लैट</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>टिप (Tip) — ₹</label>
+      <input type="number" id="billTip" min="0" value="0" inputmode="numeric">
+    </div>
+    <div class="modal-field">
+      <label>भुगतान का तरीका (Payment Mode)</label>
+      <select id="billPaymentMode">
+        <option value="Cash">कैश</option>
+        <option value="UPI">UPI</option>
+        <option value="Card">कार्ड</option>
+      </select>
+    </div>
+    <div class="modal-summary" id="billMsg"></div>
+    <div class="modal-btns">
+      <button class="cancel" id="billCancel">रद्द करें</button>
+      <button class="confirm" id="billConfirm">बिल बनाएं</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -612,17 +678,27 @@ async function loadSchedule(role) {
       const row = document.createElement('div');
       row.className = 'sched-row';
       const timeTxt = a.timeSlot || (a.startTime ? a.startTime.slice(11, 16) : '');
+      const billBtn = (canEdit && a.status === 'Completed')
+        ? '<button class="bill-btn" data-bill-id="' + a.appointmentId + '">बिल बनाएं</button>'
+        : '';
       row.innerHTML =
         '<div class="sched-left">' +
           '<div class="sched-time">' + timeTxt + '</div>' +
           '<div class="sched-client">' + a.clientName + '</div>' +
           '<div class="sched-dur">' + (a.duration || 0) + ' मिनट</div>' +
+          billBtn +
         '</div>' +
         '<span class="badge' + (canEdit ? ' tap' : '') + '" data-s="' + a.status + '" data-id="' + a.appointmentId + '">' +
           (STATUS_HI[a.status] || a.status) +
         '</span>';
       list.appendChild(row);
     });
+
+    if (canEdit) {
+      list.querySelectorAll('.bill-btn').forEach(btn => {
+        btn.addEventListener('click', () => openBillModal(btn.dataset.billId, role));
+      });
+    }
 
     if (canEdit) {
       list.querySelectorAll('.badge.tap').forEach(badge => {
@@ -647,6 +723,55 @@ async function loadSchedule(role) {
     list.innerHTML = '<div class="empty-note">शेड्यूल लोड नहीं हुआ</div>';
   }
 }
+
+/* ---------------- BILLING MODAL (added 02 Jul 2026) ---------------- */
+let billApptId = null, billRole = null;
+
+function openBillModal(appointmentId, role) {
+  billApptId = appointmentId; billRole = role;
+  $('billDiscount').value = 'None';
+  $('billTip').value = '0';
+  $('billPaymentMode').value = 'Cash';
+  setMsg('billMsg', '');
+  $('billModal').classList.remove('hidden');
+}
+
+function closeBillModal() {
+  $('billModal').classList.add('hidden');
+  billApptId = null;
+}
+
+$('billCancel').addEventListener('click', closeBillModal);
+
+$('billConfirm').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token || !billApptId) { closeBillModal(); return; }
+  const discountType = $('billDiscount').value;
+  const tipAmount = Number($('billTip').value) || 0;
+  const paymentMode = $('billPaymentMode').value;
+
+  $('billConfirm').disabled = true;
+  setMsg('billMsg', 'बिल बन रहा है…');
+
+  try {
+    const r = await fetch(API + '/create-bill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken: token, appointmentId: billApptId, discountType, tipAmount, paymentMode })
+    });
+    const res = await r.json();
+    if (res.ok) {
+      setMsg('billMsg', 'बिल बन गया ✓ कुल: ₹' + res.finalAmount, 'ok');
+      setTimeout(() => { closeBillModal(); loadSchedule(billRole); }, 1200);
+    } else {
+      setMsg('billMsg', 'बिल नहीं बना। फिर कोशिश करें।', 'err');
+      $('billConfirm').disabled = false;
+    }
+  } catch (e) {
+    setMsg('billMsg', 'नेटवर्क में दिक्कत है।', 'err');
+    $('billConfirm').disabled = false;
+  }
+});
 
 /* logout */
 function logout() {

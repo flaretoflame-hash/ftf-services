@@ -21,73 +21,90 @@
 html{scroll-behavior:smooth;}
 body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;color:#FAF7F2;}
 
-.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.amb::before{content:'';position:absolute;right:-60px;top:40px;width:320px;height:580px;background:radial-gradient(ellipse at 55% 35%,rgba(130,55,175,0.18) 0%,rgba(90,25,135,0.07) 45%,transparent 70%);filter:blur(45px);animation:drift 10s ease-in-out infinite alternate;}
-.amb::after{content:'';position:absolute;left:-40px;bottom:60px;width:260px;height:400px;background:radial-gradient(ellipse at 40% 60%,rgba(201,168,76,0.14) 0%,rgba(201,168,76,0.05) 50%,transparent 72%);filter:blur(50px);animation:drift2 13s ease-in-out infinite alternate;}
-@keyframes drift{0%{transform:translateY(0) scale(1);}100%{transform:translateY(-22px) scale(1.06);}}
-@keyframes drift2{0%{transform:translateY(0) scale(1);}100%{transform:translateY(18px) scale(1.08);}}
+.hero{position:relative;width:100%;height:78vh;min-height:480px;max-height:640px;overflow:hidden;}
+.hero img{width:100%;height:100%;object-fit:cover;object-position:center 20%;}
+.hero-fade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,8,5,0.15) 0%,rgba(10,8,5,0.55) 55%,#0a0805 100%);}
+.hero-content{position:absolute;left:0;right:0;bottom:28px;padding:0 24px;text-align:center;}
+.hero-eyebrow{font-size:9px;letter-spacing:5px;color:#C9A84C;text-transform:uppercase;font-weight:600;margin-bottom:10px;}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:700;line-height:1.1;color:#FAF7F2;}
+.top-back{position:absolute;top:20px;left:20px;z-index:2;display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(250,247,242,0.85);text-decoration:none;font-weight:500;background:rgba(10,8,5,0.35);padding:8px 14px;border-radius:30px;backdrop-filter:blur(4px);}
+.top-back svg{width:13px;height:13px;fill:currentColor;}
 
-.wrap{position:relative;z-index:1;max-width:460px;margin:0 auto;padding:54px 24px 90px;}
+.wrap{max-width:460px;margin:0 auto;padding:36px 24px 90px;}
+.head-note{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:rgba(250,247,242,0.75);line-height:1.5;text-align:center;margin-bottom:40px;}
 
-.top-back{display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(250,247,242,0.5);text-decoration:none;font-weight:500;margin-bottom:30px;transition:color .2s;}
-.top-back:hover{color:#C9A84C;}
-.top-back svg{width:14px;height:14px;fill:currentColor;}
+.pillar{display:flex;align-items:flex-start;gap:16px;margin-bottom:26px;}
+.pillar-icon{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;color:#C9A84C;}
+.pillar-text{padding-top:4px;}
+.pillar-title{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#FAF7F2;line-height:1.25;margin-bottom:4px;}
+.pillar-line{font-family:'Jost',sans-serif;font-size:12.5px;font-weight:300;color:rgba(250,247,242,0.6);line-height:1.5;}
 
-.head-eyebrow{font-size:9px;letter-spacing:5px;color:#C9A84C;text-transform:uppercase;font-weight:600;margin-bottom:12px;opacity:0.85;}
-.head-title{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;color:#FAF7F2;line-height:1.08;letter-spacing:-0.5px;margin-bottom:14px;}
-.head-note{font-family:'Jost',sans-serif;font-size:13px;font-weight:300;color:rgba(250,247,242,0.6);line-height:1.65;margin-bottom:44px;}
-.head-note b{color:#C9A84C;font-weight:500;}
+.recruit-block{margin-top:38px;padding:22px 20px;border-radius:16px;background:rgba(250,247,242,0.03);border:1px solid rgba(250,247,242,0.1);text-align:center;}
+.recruit-line{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15.5px;color:rgba(250,247,242,0.8);line-height:1.5;margin-bottom:14px;}
+.recruit-btn{display:inline-block;color:#C9A84C;text-decoration:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(201,168,76,0.4);padding-bottom:2px;}
 
-.pillar{margin-bottom:34px;padding-bottom:34px;border-bottom:1px solid rgba(250,247,242,0.08);}
-.pillar:last-of-type{border-bottom:none;}
-.pillar-num{font-family:'Cormorant Garamond',serif;font-size:15px;color:#C9A84C;letter-spacing:2px;margin-bottom:8px;}
-.pillar-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#FAF7F2;line-height:1.2;margin-bottom:12px;}
-.pillar-body{font-family:'Jost',sans-serif;font-size:13.5px;font-weight:300;line-height:1.7;color:rgba(250,247,242,0.72);}
-.pillar-body b{color:#FAF7F2;font-weight:500;}
-
-.cta-block{margin-top:50px;padding:26px 22px;border-radius:16px;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.22);text-align:center;}
+.cta-block{margin-top:22px;padding:26px 22px;border-radius:16px;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.22);text-align:center;}
 .cta-line{font-family:'Cormorant Garamond',serif;font-size:20px;color:#FAF7F2;margin-bottom:6px;}
 .cta-sub{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;color:rgba(250,247,242,0.55);letter-spacing:0.5px;margin-bottom:18px;}
 .cta-btn{display:inline-block;background:linear-gradient(135deg,#d4af37,#b89326);color:#0a0805;padding:13px 30px;border-radius:30px;text-decoration:none;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;}
 
-.page-foot{margin-top:48px;text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(250,247,242,0.3);}
+.page-foot{margin-top:44px;text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(250,247,242,0.3);}
 </style>
 </head>
 <body>
-<div class="amb"></div>
-<div class="wrap">
 
+<div class="hero">
   <a class="top-back" href="index.html">
     <svg viewBox="0 0 24 24"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg>
-    Back to Home
+    Home
   </a>
+  <img src="https://res.cloudinary.com/dlstvhspu/image/upload/f_auto,q_auto,w_900/v1780140483/aisha_fctggs.jpg" alt="Aisha — Flare to Flame" loading="eager">
+  <div class="hero-fade"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Not Software. A System With Soul.</div>
+    <div class="hero-title">Why Flare to Flame<br>Works Differently</div>
+  </div>
+</div>
 
-  <div class="head-eyebrow">Not Software. A System With Soul.</div>
-  <h1 class="head-title">Why Flare to Flame Works Differently</h1>
-  <div class="head-note">Most salon apps run appointments. Ours runs an experience. Here are four things you'll notice about us that you won't find anywhere else.</div>
+<div class="wrap">
+
+  <div class="head-note">Four things you'll feel about us before you ever read a word.</div>
 
   <div class="pillar">
-    <div class="pillar-num">I.</div>
-    <div class="pillar-title">Aisha — Your Salon Has a Face</div>
-    <div class="pillar-body">Every brand needs a voice people recognise. <b>Aisha</b> is ours — an AI-crafted host who welcomes you before you ever walk in, appears across our stories, and makes Flare to Flame feel like somewhere you already know, long before your first visit.</div>
+    <div class="pillar-icon">I</div>
+    <div class="pillar-text">
+      <div class="pillar-title">A Face You'll Recognise</div>
+      <div class="pillar-line">Aisha welcomes you before you ever walk in — across every reel, every story.</div>
+    </div>
   </div>
 
   <div class="pillar">
-    <div class="pillar-num">II.</div>
-    <div class="pillar-title">A Story, Not a Sales Pitch</div>
-    <div class="pillar-body">Behind everything we share is a reason, not a routine. Our content is built on a set of guiding principles — the <b>feeling first, the offer second</b>. We don't chase trends. We tell stories that earn devotion, because a service you forget was never the point.</div>
+    <div class="pillar-icon">II</div>
+    <div class="pillar-text">
+      <div class="pillar-title">Stories, Not Sales Pitches</div>
+      <div class="pillar-line">Every reel carries a feeling first. We don't chase trends — we earn devotion.</div>
+    </div>
   </div>
 
   <div class="pillar">
-    <div class="pillar-num">III.</div>
-    <div class="pillar-title">Talent That's Recognised, Not Just Rostered</div>
-    <div class="pillar-body">The hands that shape your experience matter to us as much as they matter to you. Our team is measured on real craft — care, consistency, and growth — so the people behind your visit are as invested in it as we are.</div>
+    <div class="pillar-icon">III</div>
+    <div class="pillar-text">
+      <div class="pillar-title">Talent That's Recognised</div>
+      <div class="pillar-line">The hands behind your visit are seen, measured, and invested — just like you.</div>
+    </div>
   </div>
 
   <div class="pillar">
-    <div class="pillar-num">IV.</div>
-    <div class="pillar-title">Precision, Down to the Last Detail</div>
-    <div class="pillar-body">When more than one hand shapes your visit, credit follows the work — never a guess. Every part of your service is tracked to the person who delivered it, so quality is never diluted by convenience. <b>Because Details Define You</b> — and they define us too.</div>
+    <div class="pillar-icon">IV</div>
+    <div class="pillar-text">
+      <div class="pillar-title">Precision, To the Last Detail</div>
+      <div class="pillar-line">Every service is tracked to the person who delivered it. Because Details Define You.</div>
+    </div>
+  </div>
+
+  <div class="recruit-block">
+    <div class="recruit-line">Detail-obsessed hands are always welcome here.</div>
+    <a class="recruit-btn" href="https://wa.me/919718831333?text=Hi%20Flare%20to%20Flame%2C%20I%27d%20like%20to%20know%20about%20joining%20the%20team" target="_blank">Say Hello →</a>
   </div>
 
   <div class="cta-block">

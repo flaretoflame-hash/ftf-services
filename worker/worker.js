@@ -470,7 +470,7 @@ export default {
 
         // Find the staff record
         const r = await fetch(
-          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Phone&fields%5B%5D=Role&pageSize=100`,
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Name&fields%5B%5D=Phone&fields%5B%5D=Role&fields%5B%5D=Hamare%20Niyam%20Accepted&fields%5B%5D=Flare%20Score%20Terms%20Accepted&fields%5B%5D=Confidentiality%20Agreed&pageSize=100`,
           { headers: authHeader }
         );
         const data = await r.json();
@@ -496,12 +496,19 @@ export default {
           expirationTtl: SESSION_TTL_SECONDS,
         });
 
+        const consents = {
+          hamareNiyam: !!(match.fields && match.fields['Hamare Niyam Accepted']),
+          flareScoreTerms: !!(match.fields && match.fields['Flare Score Terms Accepted']),
+          confidentiality: !!(match.fields && match.fields['Confidentiality Agreed']),
+        };
+
         return json({
           ok: true,
           verified: true,
           id: match.id,
           name: (match.fields && match.fields.Name) ? match.fields.Name : 'Staff',
           role: role,
+          consents: consents,
           sessionToken: sessionToken,
         });
       }
@@ -1128,6 +1135,335 @@ export default {
           tipAmount: Math.round(tipAmount),
           finalAmount: finalAmount,
         });
+      }
+
+      // ====================================================
+      // A. JOIN FLOW — 3 CONSENTS (added 03 Jul 2026)
+      // ====================================================
+
+      // ---- 18. ACCEPT CONSENTS ----
+      // POST /accept-consents { sessionToken }
+      // Locks all 3 consents together (Hamare Niyam, Flare Score Terms,
+      // Confidentiality). No field exists to un-accept — this is a
+      // one-way door by design, matching the locked staff lifecycle rule.
+      if (request.method === 'POST' && url.pathname === '/accept-consents') {
+        const body = await request.json();
+        const sessionToken = String(body.sessionToken || '').trim();
+        if (!sessionToken) return json({ ok: false, error: 'Session token required' }, 401);
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+
+        const r = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}/${staffId}`,
+          {
+            method: 'PATCH',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fields: {
+                'Hamare Niyam Accepted': true,
+                'Flare Score Terms Accepted': true,
+                'Confidentiality Agreed': true,
+              },
+            }),
+          }
+        );
+        const result = await r.json();
+        if (!r.ok) return json({ ok: false, error: result }, 400);
+        return json({ ok: true });
+      }
+
+      // ====================================================
+      // B. ATTENDANCE CLOCK IN/OUT (added 03 Jul 2026)
+      // NOTE: locked spec asks for selfie + GPS. The live Attendance
+      // table has no fields for either (no attachment field, no
+      // lat/lng field) — can't create fields via API. This builds
+      // clock in/out on the fields that DO exist; selfie+GPS need
+      // Buddy/Omni to add fields first.
+      // ====================================================
+
+      // ---- 19. CLOCK IN ----
+      // POST /clock-in { sessionToken }
+      if (request.method === 'POST' && url.pathname === '/clock-in') {
+        const body = await request.json();
+        const sessionToken = String(body.sessionToken || '').trim();
+        if (!sessionToken) return json({ ok: false, error: 'Session token required' }, 401);
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+
+        const dateStr = todayIST();
+        const nowIST = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(11, 16);
+
+        // Don't double clock-in — check for an existing row today.
+        const existFormula = encodeURIComponent(`AND({Date}='${dateStr}', FIND('${staffId}', ARRAYJOIN({Staff})))`);
+        const existRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Attendance')}?filterByFormula=${existFormula}&pageSize=5`,
+          { headers: authHeader }
+        );
+        const existData = await existRes.json();
+        if (existRes.ok && existData.records && existData.records.length > 0) {
+          return json({ ok: false, error: 'Already clocked in today', record: existData.records[0].fields }, 400);
+        }
+
+        const cRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Attendance')}`,
+          {
+            method: 'POST',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              records: [{
+                fields: {
+                  'Staff': [staffId],
+                  'Date': dateStr,
+                  'Shift Type': 'Full',
+                  'Check In Time': nowIST,
+                  'Status': 'Present',
+                },
+              }],
+              typecast: true,
+            }),
+          }
+        );
+        const cData = await cRes.json();
+        if (!cRes.ok) return json({ ok: false, error: cData }, 400);
+        return json({ ok: true, checkInTime: nowIST });
+      }
+
+      // ---- 20. CLOCK OUT ----
+      // POST /clock-out { sessionToken }
+      if (request.method === 'POST' && url.pathname === '/clock-out') {
+        const body = await request.json();
+        const sessionToken = String(body.sessionToken || '').trim();
+        if (!sessionToken) return json({ ok: false, error: 'Session token required' }, 401);
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+
+        const dateStr = todayIST();
+        const nowIST = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(11, 16);
+        const formula = encodeURIComponent(`AND({Date}='${dateStr}', FIND('${staffId}', ARRAYJOIN({Staff})))`);
+        const findRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Attendance')}?filterByFormula=${formula}&pageSize=5`,
+          { headers: authHeader }
+        );
+        const findData = await findRes.json();
+        if (!findRes.ok || !findData.records || findData.records.length === 0) {
+          return json({ ok: false, error: 'No clock-in found for today' }, 400);
+        }
+        const recId = findData.records[0].id;
+        const uRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Attendance')}/${recId}`,
+          {
+            method: 'PATCH',
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields: { 'Check Out Time': nowIST } }),
+          }
+        );
+        const uData = await uRes.json();
+        if (!uRes.ok) return json({ ok: false, error: uData }, 400);
+        return json({ ok: true, checkOutTime: nowIST });
+      }
+
+      // ---- 21. TODAY'S ATTENDANCE STATE ----
+      // GET /attendance-today?sessionToken=...
+      if (request.method === 'GET' && url.pathname === '/attendance-today') {
+        const sessionToken = String(url.searchParams.get('sessionToken') || '').trim();
+        if (!sessionToken) return json({ ok: false, error: 'Session token required' }, 401);
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+
+        const dateStr = todayIST();
+        const formula = encodeURIComponent(`AND({Date}='${dateStr}', FIND('${staffId}', ARRAYJOIN({Staff})))`);
+        const r = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Attendance')}?filterByFormula=${formula}&pageSize=5`,
+          { headers: authHeader }
+        );
+        const data = await r.json();
+        if (!r.ok) return json({ ok: false, error: data }, 400);
+        if (!data.records || data.records.length === 0) {
+          return json({ ok: true, clockedIn: false, checkInTime: null, checkOutTime: null });
+        }
+        const f = data.records[0].fields || {};
+        return json({
+          ok: true,
+          clockedIn: true,
+          checkInTime: f['Check In Time'] || null,
+          checkOutTime: f['Check Out Time'] || null,
+        });
+      }
+
+      // ====================================================
+      // C. MY EARNINGS + MY SCORE (added 03 Jul 2026)
+      // Score built HONESTLY: only 3 of 6 locked components have
+      // real data behind them today (Revenue, Client Rating,
+      // Attendance). Client Revisit Rate + Retail Attach need data
+      // that nothing writes yet (Inventory Usage table is untouched,
+      // revisit tracking doesn't exist) — returned as unavailable
+      // rather than guessed, so staff never see a fabricated number.
+      // ====================================================
+
+      // ---- 22. MY EARNINGS ----
+      // GET /my-earnings?sessionToken=&range=today|week|month
+      if (request.method === 'GET' && url.pathname === '/my-earnings') {
+        const sessionToken = String(url.searchParams.get('sessionToken') || '').trim();
+        const range = String(url.searchParams.get('range') || 'today').trim();
+        if (!sessionToken) return json({ ok: false, error: 'Session token required' }, 401);
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+
+        const now = new Date(Date.now() + 5.5 * 3600 * 1000);
+        let startStr;
+        if (range === 'week') {
+          const d = new Date(now); d.setUTCDate(d.getUTCDate() - 6);
+          startStr = d.toISOString().slice(0, 10);
+        } else if (range === 'month') {
+          startStr = now.toISOString().slice(0, 8) + '01';
+        } else {
+          startStr = now.toISOString().slice(0, 10);
+        }
+
+        const formula = encodeURIComponent(`AND({Date}>='${startStr}', FIND('${staffId}', ARRAYJOIN({Staff})))`);
+        const r = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Bills')}?filterByFormula=${formula}&fields%5B%5D=Final%20Amount&fields%5B%5D=Staff&pageSize=100`,
+          { headers: authHeader }
+        );
+        const data = await r.json();
+        if (!r.ok) return json({ ok: false, error: data }, 400);
+        const recs = data.records || [];
+
+        let total = 0;
+        recs.forEach(rec => {
+          const amt = Number(rec.fields && rec.fields['Final Amount']) || 0;
+          const staffOnBill = (rec.fields && rec.fields.Staff) || [];
+          // Multi-staff bill (rare under this schema) — split evenly. Single-staff = full credit.
+          total += staffOnBill.length > 0 ? (amt / staffOnBill.length) : 0;
+        });
+
+        // Commission preview — only meaningful if this staff has a % set.
+        const sRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}/${staffId}?fields%5B%5D=Commission%20Percent&fields%5B%5D=Salary%20Structure%20Type`,
+          { headers: authHeader }
+        );
+        const sData = await sRes.json();
+        const commissionPct = (sRes.ok && sData.fields && sData.fields['Commission Percent']) || 0;
+        const commissionPreview = commissionPct > 0 ? Math.round(total * (commissionPct / 100)) : null;
+
+        return json({
+          ok: true,
+          range: range,
+          billCount: recs.length,
+          totalEarnings: Math.round(total),
+          commissionPreview: commissionPreview,
+        });
+      }
+
+      // ---- 23. MY SCORE (partial, honest) ----
+      // GET /my-score?sessionToken=...
+      if (request.method === 'GET' && url.pathname === '/my-score') {
+        const sessionToken = String(url.searchParams.get('sessionToken') || '').trim();
+        if (!sessionToken) return json({ ok: false, error: 'Session token required' }, 401);
+        const staffId = await env.OTP_KV.get('sess:' + sessionToken);
+        if (!staffId) return json({ ok: false, error: 'Session expired. Login again.' }, 401);
+
+        const now = new Date(Date.now() + 5.5 * 3600 * 1000);
+        const monthStart = now.toISOString().slice(0, 8) + '01';
+
+        // 1. Revenue Achievement (this month earnings / Monthly Target, capped 120%).
+        const billFormula = encodeURIComponent(`AND({Date}>='${monthStart}', FIND('${staffId}', ARRAYJOIN({Staff})))`);
+        const billRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Bills')}?filterByFormula=${billFormula}&fields%5B%5D=Final%20Amount&fields%5B%5D=Staff&pageSize=100`,
+          { headers: authHeader }
+        );
+        const billData = await billRes.json();
+        let monthEarnings = 0;
+        if (billRes.ok) {
+          (billData.records || []).forEach(rec => {
+            const amt = Number(rec.fields && rec.fields['Final Amount']) || 0;
+            const n = ((rec.fields && rec.fields.Staff) || []).length || 1;
+            monthEarnings += amt / n;
+          });
+        }
+        const sRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}/${staffId}?fields%5B%5D=Monthly%20Target`,
+          { headers: authHeader }
+        );
+        const sData = await sRes.json();
+        const target = (sRes.ok && sData.fields && sData.fields['Monthly Target']) || 0;
+        const revenuePct = target > 0 ? Math.min(120, Math.round((monthEarnings / target) * 100)) : null;
+
+        // 2. Client Rating (average of Feedback.Rating for this staff, all-time).
+        const fbFormula = encodeURIComponent(`FIND('${staffId}', ARRAYJOIN({Staff}))`);
+        const fbRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Feedback')}?filterByFormula=${fbFormula}&fields%5B%5D=Rating&pageSize=100`,
+          { headers: authHeader }
+        );
+        const fbData = await fbRes.json();
+        let ratingAvg = null;
+        if (fbRes.ok && fbData.records && fbData.records.length > 0) {
+          const ratings = fbData.records.map(r => Number(r.fields && r.fields.Rating) || 0).filter(n => n > 0);
+          if (ratings.length > 0) ratingAvg = Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10;
+        }
+
+        // 3. Attendance & Punctuality (Present / total marked days this month).
+        const attFormula = encodeURIComponent(`AND({Date}>='${monthStart}', FIND('${staffId}', ARRAYJOIN({Staff})))`);
+        const attRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Attendance')}?filterByFormula=${attFormula}&fields%5B%5D=Status&pageSize=100`,
+          { headers: authHeader }
+        );
+        const attData = await attRes.json();
+        let attendancePct = null;
+        if (attRes.ok && attData.records && attData.records.length > 0) {
+          const present = attData.records.filter(r => (r.fields && r.fields.Status) === 'Present').length;
+          attendancePct = Math.round((present / attData.records.length) * 100);
+        }
+
+        return json({
+          ok: true,
+          revenueAchievementPct: revenuePct,
+          clientRatingAvg: ratingAvg,
+          attendancePct: attendancePct,
+          // Not computable today — nothing writes Inventory Usage or tracks revisits yet.
+          clientRevisitRate: null,
+          retailAttachPct: null,
+        });
+      }
+
+      // ---- 24. ANONYMOUS LEADERBOARD ----
+      // GET /leaderboard — % of Monthly Target achieved, no names, no amounts.
+      if (request.method === 'GET' && url.pathname === '/leaderboard') {
+        const now = new Date(Date.now() + 5.5 * 3600 * 1000);
+        const monthStart = now.toISOString().slice(0, 8) + '01';
+
+        const staffRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?fields%5B%5D=Monthly%20Target&fields%5B%5D=Staff%20Status&pageSize=100`,
+          { headers: authHeader }
+        );
+        const staffData = await staffRes.json();
+        if (!staffRes.ok) return json({ ok: false, error: staffData }, 400);
+        const activeStaff = (staffData.records || []).filter(r => (r.fields && r.fields['Staff Status']) === 'Active');
+
+        const billRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Bills')}?filterByFormula=${encodeURIComponent(`{Date}>='${monthStart}'`)}&fields%5B%5D=Final%20Amount&fields%5B%5D=Staff&pageSize=100`,
+          { headers: authHeader }
+        );
+        const billData = await billRes.json();
+        const earningsByStaff = {};
+        if (billRes.ok) {
+          (billData.records || []).forEach(rec => {
+            const amt = Number(rec.fields && rec.fields['Final Amount']) || 0;
+            const ids = (rec.fields && rec.fields.Staff) || [];
+            ids.forEach(id => { earningsByStaff[id] = (earningsByStaff[id] || 0) + (amt / ids.length); });
+          });
+        }
+
+        const board = activeStaff
+          .map(s => {
+            const target = (s.fields && s.fields['Monthly Target']) || 0;
+            const earned = earningsByStaff[s.id] || 0;
+            return target > 0 ? Math.min(120, Math.round((earned / target) * 100)) : null;
+          })
+          .filter(pct => pct !== null)
+          .sort((a, b) => b - a);
+
+        return json({ ok: true, leaderboard: board });
       }
 
       /* ============================================================

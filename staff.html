@@ -247,6 +247,33 @@ input::placeholder { color: rgba(250,247,242,0.3); }
 .badge[data-s="Cancelled"], .badge[data-s="No Show"] { color: var(--red); border-color: var(--red); background: rgba(201,107,90,0.1); }
 .badge.tap { cursor: pointer; }
 .empty-note { color: var(--muted); font-size: 13px; text-align: center; padding: 14px 0; font-family: 'Tiro Devanagari Hindi', serif; }
+.consent-row {
+  display: flex; align-items: flex-start; gap: 10px; text-align: left;
+  padding: 12px 4px; border-bottom: 1px solid rgba(250,247,242,0.07); cursor: pointer;
+}
+.consent-row:last-of-type { border-bottom: none; }
+.consent-row input.consent-check { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--gold); flex-shrink: 0; }
+.consent-row span { font-size: 14px; color: var(--offwhite); line-height: 1.5; font-family: 'Tiro Devanagari Hindi', serif; }
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.tab-btn {
+  flex: 1; padding: 9px; border-radius: 10px; border: 1px solid rgba(250,247,242,0.15);
+  background: transparent; color: var(--muted); font-family: 'Tiro Devanagari Hindi', serif; font-size: 13px; cursor: pointer;
+}
+.tab-btn.sel { background: rgba(201,168,76,0.14); border-color: var(--gold); color: var(--gold); }
+.earn-amount { font-family: 'Cormorant Garamond', serif; font-size: 34px; color: var(--offwhite); text-align: center; font-weight: 700; }
+.earn-sub { text-align: center; color: var(--muted); font-size: 12px; margin-top: 4px; font-family: 'Tiro Devanagari Hindi', serif; }
+.score-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(250,247,242,0.07); }
+.score-row:last-child { border-bottom: none; }
+.score-label { font-size: 13px; color: var(--offwhite); font-family: 'Tiro Devanagari Hindi', serif; }
+.score-val { font-size: 15px; color: var(--gold); font-weight: 600; }
+.score-val.soon { color: var(--muted); font-size: 12px; font-weight: 400; font-family: 'Tiro Devanagari Hindi', serif; }
+.lb-title { font-size: 12px; color: var(--muted); margin-bottom: 8px; font-family: 'Tiro Devanagari Hindi', serif; }
+.lb-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.lb-bar-track { flex: 1; height: 6px; border-radius: 4px; background: rgba(250,247,242,0.08); overflow: hidden; }
+.lb-bar-fill { height: 100%; background: var(--gold); }
+.lb-bar-pct { font-size: 11px; color: var(--muted); width: 34px; text-align: right; }
+
+
 .bill-btn {
   font-size: 11px; padding: 5px 10px; border-radius: 20px; margin-top: 6px;
   border: 1px solid var(--gold); color: var(--gold); background: rgba(201,168,76,0.1);
@@ -345,6 +372,28 @@ input::placeholder { color: rgba(250,247,242,0.3); }
     <div class="msg" id="msgOtp"></div>
   </div>
 
+  <!-- ====== SCREEN: JOIN CONSENTS (added 03 Jul 2026) ================= -->
+  <div id="scrConsent" class="card hidden">
+    <h2>पहली बार आना है 🙏</h2>
+    <p style="color:var(--muted);font-size:14px;margin:6px 0 16px;">आगे बढ़ने से पहले, कृपया इन तीन बातों को पढ़ें और मानें।</p>
+
+    <label class="consent-row">
+      <input type="checkbox" id="cnHamareNiyam" class="consent-check">
+      <span><b>हमारे नियम</b> — स्टाफ आचार संहिता। <span style="color:var(--muted);font-size:12px;">(पूरा पाठ जल्द जुड़ेगा)</span></span>
+    </label>
+    <label class="consent-row">
+      <input type="checkbox" id="cnFlareScore" class="consent-check">
+      <span><b>Flare Score नियम</b> — आपका प्रदर्शन कैसे मापा जाता है। <span style="color:var(--muted);font-size:12px;">(पूरा पाठ जल्द जुड़ेगा)</span></span>
+    </label>
+    <label class="consent-row">
+      <input type="checkbox" id="cnConfidentiality" class="consent-check">
+      <span><b>गोपनीयता समझौता</b> — क्लाइंट व सैलून की जानकारी गुप्त रखना। <span style="color:var(--muted);font-size:12px;">(पूरा पाठ जल्द जुड़ेगा)</span></span>
+    </label>
+
+    <button class="btn" id="btnAcceptConsents" disabled>मैं सहमत हूँ और आगे बढ़ता हूँ</button>
+    <div class="msg" id="msgConsent"></div>
+  </div>
+
   <!-- ================= SCREEN 3: DASHBOARD ================= -->
   <div id="scrDash" class="hidden">
 
@@ -353,9 +402,34 @@ input::placeholder { color: rgba(250,247,242,0.3); }
       <div class="hello-sub">आज का दिन शुभ हो</div>
     </div>
 
+    <div class="card" id="attendCard">
+      <h2>उपस्थिति</h2>
+      <div id="attendState" class="empty-note">लोड हो रहा है…</div>
+      <button class="btn" id="btnClockIn" style="display:none;">क्लॉक इन करें</button>
+      <button class="btn btn-ghost" id="btnClockOut" style="display:none;">क्लॉक आउट करें</button>
+      <div class="msg" id="msgAttend"></div>
+    </div>
+
     <div class="card">
       <h2 id="schedTitle">आज की बुकिंग</h2>
       <div id="schedList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>मेरी कमाई</h2>
+      <div class="tabs">
+        <button class="tab-btn sel" data-range="today">आज</button>
+        <button class="tab-btn" data-range="week">हफ्ता</button>
+        <button class="tab-btn" data-range="month">महीना</button>
+      </div>
+      <div id="earningsAmount" class="earn-amount">—</div>
+      <div id="earningsSub" class="earn-sub"></div>
+    </div>
+
+    <div class="card">
+      <h2>मेरा स्कोर</h2>
+      <div id="scoreList"><div class="empty-note">लोड हो रहा है…</div></div>
+      <div id="leaderboardWrap" style="margin-top:14px;"></div>
     </div>
 
     <div class="card">
@@ -440,8 +514,13 @@ function normalizePhone(p) { return String(p || '').replace(/[^0-9]/g, ''); }
 const savedToken = sessionStorage.getItem('ftf_token');
 const savedName = sessionStorage.getItem('ftf_name');
 const savedRole = sessionStorage.getItem('ftf_role');
+const savedConsented = sessionStorage.getItem('ftf_consented');
 if (savedToken && savedName) {
-  openDashboard(savedName, savedRole || '');
+  if (savedConsented === '0') {
+    hide('scrPhone'); hide('scrOtp'); show('scrConsent');
+  } else {
+    openDashboard(savedName, savedRole || '');
+  }
 }
 
 /* ---------------- STEP 1: SEND OTP ---------------- */
@@ -525,7 +604,14 @@ $('btnVerify').addEventListener('click', async () => {
     sessionStorage.setItem('ftf_name', res.name);
     sessionStorage.setItem('ftf_id', res.id);
     sessionStorage.setItem('ftf_role', res.role || '');
-    openDashboard(res.name, res.role || '');
+    const c = res.consents || {};
+    const allConsented = !!(c.hamareNiyam && c.flareScoreTerms && c.confidentiality);
+    sessionStorage.setItem('ftf_consented', allConsented ? '1' : '0');
+    if (!allConsented) {
+      hide('scrPhone'); hide('scrOtp'); show('scrConsent');
+    } else {
+      openDashboard(res.name, res.role || '');
+    }
   } catch (e) {
     setMsg('msgOtp', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
   }
@@ -545,6 +631,9 @@ function openDashboard(name, role) {
   loadTeam();
   loadStatus();
   loadSchedule(role);
+  loadAttendance();
+  loadEarnings('today');
+  loadScore();
 }
 
 /* availability buttons */
@@ -773,12 +862,179 @@ $('billConfirm').addEventListener('click', async () => {
   }
 });
 
+/* ---------------- JOIN CONSENTS (added 03 Jul 2026) ---------------- */
+document.querySelectorAll('.consent-check').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const all = document.querySelectorAll('.consent-check');
+    const allChecked = Array.from(all).every(c => c.checked);
+    $('btnAcceptConsents').disabled = !allChecked;
+  });
+});
+
+$('btnAcceptConsents').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) { logout(); return; }
+  $('btnAcceptConsents').disabled = true;
+  setMsg('msgConsent', 'सेव हो रहा है…');
+  try {
+    const r = await fetch(API + '/accept-consents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken: token })
+    });
+    const res = await r.json();
+    if (res.ok) {
+      sessionStorage.setItem('ftf_consented', '1');
+      const name = sessionStorage.getItem('ftf_name');
+      const role = sessionStorage.getItem('ftf_role');
+      hide('scrConsent');
+      openDashboard(name, role);
+    } else {
+      setMsg('msgConsent', 'सेव नहीं हुआ। फिर कोशिश करें।', 'err');
+      $('btnAcceptConsents').disabled = false;
+    }
+  } catch (e) {
+    setMsg('msgConsent', 'नेटवर्क में दिक्कत है।', 'err');
+    $('btnAcceptConsents').disabled = false;
+  }
+});
+
+/* ---------------- ATTENDANCE (added 03 Jul 2026) ---------------- */
+async function loadAttendance() {
+  const token = sessionStorage.getItem('ftf_token');
+  const stateEl = $('attendState');
+  if (!token) return;
+  try {
+    const r = await fetch(API + '/attendance-today?sessionToken=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (!data.ok) { stateEl.textContent = 'लोड नहीं हुआ'; return; }
+    if (!data.clockedIn) {
+      stateEl.textContent = 'आज अभी क्लॉक इन नहीं किया';
+      $('btnClockIn').style.display = 'block';
+      $('btnClockOut').style.display = 'none';
+    } else if (data.clockedIn && !data.checkOutTime) {
+      stateEl.textContent = 'क्लॉक इन: ' + data.checkInTime + ' बजे';
+      $('btnClockIn').style.display = 'none';
+      $('btnClockOut').style.display = 'block';
+    } else {
+      stateEl.textContent = 'आज पूरा हुआ — ' + data.checkInTime + ' से ' + data.checkOutTime + ' तक';
+      $('btnClockIn').style.display = 'none';
+      $('btnClockOut').style.display = 'none';
+    }
+  } catch (e) {
+    stateEl.textContent = 'लोड नहीं हुआ';
+  }
+}
+
+$('btnClockIn').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) { logout(); return; }
+  $('btnClockIn').disabled = true;
+  setMsg('msgAttend', 'क्लॉक इन हो रहा है…');
+  try {
+    const r = await fetch(API + '/clock-in', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken: token })
+    });
+    const res = await r.json();
+    if (res.ok) { setMsg('msgAttend', 'क्लॉक इन हो गया ✓', 'ok'); loadAttendance(); }
+    else { setMsg('msgAttend', res.error || 'नहीं हुआ, फिर कोशिश करें।', 'err'); $('btnClockIn').disabled = false; }
+  } catch (e) { setMsg('msgAttend', 'नेटवर्क में दिक्कत है।', 'err'); $('btnClockIn').disabled = false; }
+});
+
+$('btnClockOut').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) { logout(); return; }
+  $('btnClockOut').disabled = true;
+  setMsg('msgAttend', 'क्लॉक आउट हो रहा है…');
+  try {
+    const r = await fetch(API + '/clock-out', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken: token })
+    });
+    const res = await r.json();
+    if (res.ok) { setMsg('msgAttend', 'क्लॉक आउट हो गया ✓', 'ok'); loadAttendance(); }
+    else { setMsg('msgAttend', res.error || 'नहीं हुआ, फिर कोशिश करें।', 'err'); $('btnClockOut').disabled = false; }
+  } catch (e) { setMsg('msgAttend', 'नेटवर्क में दिक्कत है।', 'err'); $('btnClockOut').disabled = false; }
+});
+
+/* ---------------- MY EARNINGS (added 03 Jul 2026) ---------------- */
+async function loadEarnings(range) {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) return;
+  const amountEl = $('earningsAmount'), subEl = $('earningsSub');
+  amountEl.textContent = '…';
+  try {
+    const r = await fetch(API + '/my-earnings?sessionToken=' + encodeURIComponent(token) + '&range=' + range);
+    const data = await r.json();
+    if (!data.ok) { amountEl.textContent = '—'; subEl.textContent = 'लोड नहीं हुआ'; return; }
+    amountEl.textContent = '₹' + data.totalEarnings;
+    let sub = data.billCount + ' बिल';
+    if (data.commissionPreview !== null) sub += ' · अनुमानित कमीशन ₹' + data.commissionPreview;
+    subEl.textContent = sub;
+  } catch (e) {
+    amountEl.textContent = '—'; subEl.textContent = 'लोड नहीं हुआ';
+  }
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    loadEarnings(btn.dataset.range);
+  });
+});
+
+/* ---------------- MY SCORE (added 03 Jul 2026, partial + honest) ---------------- */
+async function loadScore() {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) return;
+  const list = $('scoreList');
+  try {
+    const r = await fetch(API + '/my-score?sessionToken=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (!data.ok) { list.innerHTML = '<div class="empty-note">लोड नहीं हुआ</div>'; return; }
+    const rows = [];
+    rows.push(rowHtml('राजस्व लक्ष्य (Revenue)', data.revenueAchievementPct !== null ? data.revenueAchievementPct + '%' : null));
+    rows.push(rowHtml('क्लाइंट रेटिंग', data.clientRatingAvg !== null ? data.clientRatingAvg + ' / 5' : null));
+    rows.push(rowHtml('उपस्थिति (Attendance)', data.attendancePct !== null ? data.attendancePct + '%' : null));
+    rows.push(rowHtml('क्लाइंट रिपीट दर', null));
+    rows.push(rowHtml('रिटेल अटैच', null));
+    list.innerHTML = rows.join('');
+    loadLeaderboard();
+  } catch (e) {
+    list.innerHTML = '<div class="empty-note">लोड नहीं हुआ</div>';
+  }
+}
+
+function rowHtml(label, val) {
+  if (val === null) {
+    return '<div class="score-row"><span class="score-label">' + label + '</span><span class="score-val soon">जल्द आएगा</span></div>';
+  }
+  return '<div class="score-row"><span class="score-label">' + label + '</span><span class="score-val">' + val + '</span></div>';
+}
+
+async function loadLeaderboard() {
+  const wrap = $('leaderboardWrap');
+  try {
+    const r = await fetch(API + '/leaderboard');
+    const data = await r.json();
+    if (!data.ok || !data.leaderboard || data.leaderboard.length === 0) { wrap.innerHTML = ''; return; }
+    let html = '<div class="lb-title">टीम — लक्ष्य का % (गुमनाम)</div>';
+    data.leaderboard.forEach(pct => {
+      html += '<div class="lb-bar-row"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:' + Math.min(100, pct) + '%;"></div></div><div class="lb-bar-pct">' + pct + '%</div></div>';
+    });
+    wrap.innerHTML = html;
+  } catch (e) { wrap.innerHTML = ''; }
+}
+
 /* logout */
 function logout() {
   sessionStorage.removeItem('ftf_token');
   sessionStorage.removeItem('ftf_name');
   sessionStorage.removeItem('ftf_id');
   sessionStorage.removeItem('ftf_role');
+  sessionStorage.removeItem('ftf_consented');
   hide('scrDash'); show('scrPhone');
   $('phone').value = ''; $('otp').value = '';
   setMsg('msgPhone', ''); setMsg('msgAvail', '');

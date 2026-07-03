@@ -850,8 +850,15 @@ $('billConfirm').addEventListener('click', async () => {
     });
     const res = await r.json();
     if (res.ok) {
-      setMsg('billMsg', 'बिल बन गया ✓ कुल: ₹' + res.finalAmount, 'ok');
-      setTimeout(() => { closeBillModal(); loadSchedule(billRole); }, 1200);
+      let msg = 'बिल बन गया ✓ कुल: ₹' + res.finalAmount;
+      if (res.commissionBreakdown && res.commissionBreakdown.length > 0) {
+        msg += '<br><span style="font-size:12px;">कमीशन: ' +
+          res.commissionBreakdown.map(function(c){ return c.staffName + ' ₹' + c.commissionAmount; }).join(' · ') +
+          '</span>';
+      }
+      $('billMsg').innerHTML = msg;
+      $('billMsg').className = 'modal-summary ok';
+      setTimeout(() => { closeBillModal(); loadSchedule(billRole); }, 2200);
     } else {
       setMsg('billMsg', 'बिल नहीं बना। फिर कोशिश करें।', 'err');
       $('billConfirm').disabled = false;

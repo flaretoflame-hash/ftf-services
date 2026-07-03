@@ -1039,7 +1039,8 @@ export default {
         );
         const linesRes = await fetch(
           `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(BOOKING_LINES_TABLE)}` +
-            `?filterByFormula=${linesFormula}&fields%5B%5D=Price%20At%20Booking&fields%5B%5D=Service&pageSize=100`,
+            `?filterByFormula=${linesFormula}&fields%5B%5D=Price%20At%20Booking&fields%5B%5D=Service` +
+            `&fields%5B%5D=Commission%20Staff&fields%5B%5D=Assigned%20Staff&pageSize=100`,
           { headers: authHeader }
         );
         const linesData = await linesRes.json();
@@ -1091,6 +1092,53 @@ export default {
         const taxableAfterDiscount = taxableTotal * discountRatio;
         const gstAmount = Math.round(taxableAfterDiscount * 0.18);
 
+        // 6.5 SPLIT COMMISSION (Point 4 — multi-service single booking).
+        // Each Booking Line can name its own Commission Staff (built into the
+        // schema already, separate from Assigned Staff — e.g. a senior stylist
+        // getting credit for supervised work). Commission is calculated on the
+        // DISCOUNTED SERVICE VALUE only — not on GST, not on tip. That's a
+        // default assumption; tell Claude if FTF pays commission differently.
+        let commissionBaseByStaff = {};
+        lineRecs.forEach(r => {
+          const price = Number(r.fields && r.fields['Price At Booking']) || 0;
+          const lineShare = mrpTotal > 0 ? (price / mrpTotal) : 0;
+          const lineDiscountedValue = discountedMrp * lineShare;
+          let commStaff = (r.fields && r.fields['Commission Staff']) || [];
+          if (commStaff.length === 0) commStaff = (r.fields && r.fields['Assigned Staff']) || [];
+          if (commStaff.length === 0) return; // nothing to attribute
+          const perHead = lineDiscountedValue / commStaff.length;
+          commStaff.forEach(sid => {
+            commissionBaseByStaff[sid] = (commissionBaseByStaff[sid] || 0) + perHead;
+          });
+        });
+
+        const commStaffIds = Object.keys(commissionBaseByStaff);
+        let commissionBreakdown = [];
+        if (commStaffIds.length > 0) {
+          const commFormula = encodeURIComponent(
+            'OR(' + commStaffIds.map(id => `RECORD_ID()='${id}'`).join(',') + ')'
+          );
+          const commRes = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}?filterByFormula=${commFormula}` +
+              `&fields%5B%5D=Name&fields%5B%5D=Commission%20Percent&pageSize=100`,
+            { headers: authHeader }
+          );
+          const commData = await commRes.json();
+          if (commRes.ok) {
+            (commData.records || []).forEach(rec => {
+              const pct = Number(rec.fields && rec.fields['Commission Percent']) || 0;
+              const base = commissionBaseByStaff[rec.id] || 0;
+              commissionBreakdown.push({
+                staffId: rec.id,
+                staffName: (rec.fields && rec.fields.Name) || 'Staff',
+                commissionBase: Math.round(base),
+                commissionPct: pct,
+                commissionAmount: Math.round(base * (pct / 100)),
+              });
+            });
+          }
+        }
+
         // 7. Final.
         const finalAmount = Math.round(discountedMrp + gstAmount + tipAmount);
 
@@ -1134,6 +1182,7 @@ export default {
           gstAmount: gstAmount,
           tipAmount: Math.round(tipAmount),
           finalAmount: finalAmount,
+          commissionBreakdown: commissionBreakdown, // NOTE: shown here, not yet persisted anywhere — Bills has no link back to this Appointment/Booking Lines. See Point 4 note in Notion.
         });
       }
 

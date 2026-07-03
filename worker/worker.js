@@ -1173,6 +1173,43 @@ export default {
         if (!billRes.ok) {
           return json({ ok: false, error: billData }, 400);
         }
+        const billRecordId = billData.records && billData.records[0] && billData.records[0].id;
+
+        // 8.5 WRITE COMMISSION LOGS (Point 4 — now persisted, Commission Logs table live).
+        // One row per staff member on this bill. Failure here does NOT fail the
+        // bill itself — the bill is already saved; commission logging is a
+        // best-effort follow-up, reported back so nothing fails silently.
+        const monthStr = todayIST().slice(0, 7); // YYYY-MM
+        let commissionLogsWritten = 0;
+        let commissionLogError = null;
+        if (billRecordId && commissionBreakdown.length > 0) {
+          const logRecords = commissionBreakdown.map(c => ({
+            fields: {
+              'Bill': [billRecordId],
+              'Staff': [c.staffId],
+              'Commission Base': c.commissionBase,
+              'Commission Percent': c.commissionPct,
+              'Amount': c.commissionAmount,
+              'Month': monthStr,
+              'Status': 'Pending',
+              'Date': todayIST(),
+            },
+          }));
+          const logRes = await fetch(
+            `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Commission Logs')}`,
+            {
+              method: 'POST',
+              headers: { ...authHeader, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ records: logRecords, typecast: true }),
+            }
+          );
+          const logData = await logRes.json();
+          if (logRes.ok) {
+            commissionLogsWritten = (logData.records || []).length;
+          } else {
+            commissionLogError = logData;
+          }
+        }
 
         return json({
           ok: true,
@@ -1182,7 +1219,9 @@ export default {
           gstAmount: gstAmount,
           tipAmount: Math.round(tipAmount),
           finalAmount: finalAmount,
-          commissionBreakdown: commissionBreakdown, // NOTE: shown here, not yet persisted anywhere — Bills has no link back to this Appointment/Booking Lines. See Point 4 note in Notion.
+          commissionBreakdown: commissionBreakdown,
+          commissionLogsWritten: commissionLogsWritten,
+          commissionLogError: commissionLogError,
         });
       }
 
@@ -1386,21 +1425,31 @@ export default {
           total += staffOnBill.length > 0 ? (amt / staffOnBill.length) : 0;
         });
 
-        // Commission preview — only meaningful if this staff has a % set.
-        const sRes = await fetch(
-          `https://api.airtable.com/v0/${BASE_ID}/${STAFF_TABLE}/${staffId}?fields%5B%5D=Commission%20Percent&fields%5B%5D=Salary%20Structure%20Type`,
+        // Real commission — read from Commission Logs (exact, per-service, not
+        // an approximation). Only covers bills created after Commission Logs
+        // went live — older bills have no log rows, so totals before that
+        // point will read as 0 commission even if revenue shows above.
+        const commFormula = encodeURIComponent(`AND({Date}>='${startStr}', FIND('${staffId}', ARRAYJOIN({Staff})))`);
+        const commRes = await fetch(
+          `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent('Commission Logs')}?filterByFormula=${commFormula}&fields%5B%5D=Amount&fields%5B%5D=Status&pageSize=100`,
           { headers: authHeader }
         );
-        const sData = await sRes.json();
-        const commissionPct = (sRes.ok && sData.fields && sData.fields['Commission Percent']) || 0;
-        const commissionPreview = commissionPct > 0 ? Math.round(total * (commissionPct / 100)) : null;
+        const commData = await commRes.json();
+        let commissionTotal = 0, commissionPendingCount = 0;
+        if (commRes.ok) {
+          (commData.records || []).forEach(rec => {
+            commissionTotal += Number(rec.fields && rec.fields.Amount) || 0;
+            if ((rec.fields && rec.fields.Status) === 'Pending') commissionPendingCount++;
+          });
+        }
 
         return json({
           ok: true,
           range: range,
           billCount: recs.length,
           totalEarnings: Math.round(total),
-          commissionPreview: commissionPreview,
+          commissionPreview: Math.round(commissionTotal),
+          commissionPendingCount: commissionPendingCount,
         });
       }
 

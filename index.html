@@ -994,7 +994,7 @@ function buildCard(s, i) {
   var nameTxt  = '#FAF7F2';
   var shortTxt = 'rgba(250,247,242,0.92)';
   var fullTxt  = 'rgba(250,247,242,0.95)';
-  var hintTxt  = 'rgba(250,247,242,0.65)';
+  var hintTxt  = 'rgba(250,247,242,0.45)';
   var cc = s.catColor;
   var isOpen = openCards[i] || false;
   return '<div class="card' + (isOpen ? ' open' : '') + '" id="lcard' + i + '" onclick="toggleCard(' + i + ')">'
@@ -1002,12 +1002,12 @@ function buildCard(s, i) {
     + '<div class="card-overlay" style="background:' + ovBg + '"></div>'
     + '<div class="card-inner"><div class="card-spacer"></div>'
     + '<div class="card-text">'
-    + '<div class="card-cat" style="color:' + cc + ';text-shadow:0 1px 3px rgba(8,5,2,0.55)">' + s.cat.toUpperCase() + '</div>'
+    + '<div class="card-cat" style="color:' + cc + ';opacity:0.75;text-shadow:0 1px 3px rgba(8,5,2,0.55)">' + s.cat.toUpperCase() + '</div>'
     + '<div class="card-name" style="color:' + nameTxt + ';text-shadow:0 1px 3px rgba(8,5,2,0.55)">' + s.name + '</div>'
-    + '<div class="card-divider" style="background:' + cc + '"></div>'
-    + '<div class="card-short" style="color:' + shortTxt + ';text-shadow:0 1px 3px rgba(8,5,2,0.55)">' + s.short + '</div>'
+    + '<div class="card-divider" style="background:' + cc + ';opacity:0.5"></div>'
+    + '<div class="card-short" style="color:' + shortTxt + '">' + s.short + '</div>'
     + '<div class="card-full" style="color:' + fullTxt + ';border-top-color:' + cc + '33">' + s.full + '</div>'
-    + '<div class="card-brand" style="background:' + cc + '18;border-color:' + cc + '55;color:#FAF7F2">' + s.brand + '</div>'
+    + '<div class="card-brand" style="background:' + cc + '18;border-color:' + cc + '55;color:#FAF7F2;opacity:0.7">' + s.brand + '</div>'
     + '</div></div>'
     + '<div class="card-expand" id="lhint' + i + '" style="color:' + hintTxt + '">' + (isOpen ? '▲ Less' : '▼ More details') + '</div>'
     + '<a class="book-btn" href="https://wa.me/919718831333?text=' + s.waText + '" target="_blank" onclick="event.stopPropagation()">Book Now →</a>'

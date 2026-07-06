@@ -982,23 +982,9 @@ function toggleCard(i) {
 
 function buildCard(s, i) {
   var light = s.overlayLight;
-  /* Per-category slate tints (locked 06 Jul 2026) — same gradient structure as template, hue per service world */
-  var SLATES = {
-    hair:      { mid:'rgba(237,229,247,0.85)', end:'rgba(230,220,244,0.97)' },  /* Lavender */
-    skin:      { mid:'rgba(253,235,221,0.85)', end:'rgba(251,227,209,0.97)' },  /* Peach */
-    makeup:    { mid:'rgba(252,230,238,0.85)', end:'rgba(250,221,232,0.97)' },  /* Pastel Pink */
-    nails:     { mid:'rgba(227,246,238,0.85)', end:'rgba(217,242,232,0.97)' },  /* Pearl Mint */
-    waxing:    { mid:'rgba(248,237,215,0.85)', end:'rgba(245,231,203,0.97)' },  /* Warm Nude Gold */
-    threading: { mid:'rgba(241,243,247,0.85)', end:'rgba(235,238,244,0.97)' },  /* Frost Ivory Silver */
-    grooming:  { mid:'rgba(7,44,40,0.86)',     end:'rgba(5,34,31,0.98)'     },  /* Deep Teal Emerald (dark) */
-    signature: { mid:'rgba(26,18,36,0.86)',    end:'rgba(18,12,28,0.98)'    }   /* Aurora Prism (dark violet-gold) */
-  };
-  var sl = SLATES[s.category];
-  var ovBg = sl
-    ? 'linear-gradient(to right,transparent 28%,' + sl.mid + ' 48%,' + sl.end + ' 100%)'
-    : (light
-      ? 'linear-gradient(to right,transparent 28%,rgba(250,248,244,0.85) 48%,rgba(248,245,240,0.97) 100%)'
-      : 'linear-gradient(to right,transparent 28%,rgba(8,16,18,0.86) 48%,rgba(6,12,14,0.98) 100%)');
+  var ovBg = light
+    ? 'linear-gradient(to right,transparent 26%,rgba(248,243,236,0.88) 44%,rgba(245,239,230,0.98) 100%)'
+    : 'linear-gradient(to right,transparent 26%,rgba(6,12,14,0.88) 44%,rgba(4,10,12,0.99) 100%)';
   var nameTxt  = light ? '#180800' : '#FAF7F2';
   var shortTxt = light ? 'rgba(30,12,0,0.92)' : 'rgba(250,247,242,0.92)';
   var fullTxt  = light ? 'rgba(25,10,0,0.95)' : 'rgba(250,247,242,0.95)';

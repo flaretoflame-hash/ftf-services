@@ -981,15 +981,18 @@ function toggleCard(i) {
 }
 
 function buildCard(s, i) {
-  var light = s.overlayLight;
-  var ovBg = light
-    ? 'linear-gradient(to right,transparent 26%,rgba(248,243,236,0.88) 44%,rgba(245,239,230,0.98) 100%)'
-    : 'linear-gradient(to right,transparent 26%,rgba(6,12,14,0.88) 44%,rgba(4,10,12,0.99) 100%)';
-  var nameTxt  = light ? '#180800' : '#FAF7F2';
-  var shortTxt = light ? 'rgba(30,12,0,0.92)' : 'rgba(250,247,242,0.92)';
-  var fullTxt  = light ? 'rgba(25,10,0,0.95)' : 'rgba(250,247,242,0.95)';
-  var hintTxt  = light ? 'rgba(30,12,0,0.65)' : 'rgba(250,247,242,0.65)';
-  var cc = s.catColor;
+  /* STAGE 3 (locked 06 Jul 2026): all 8 slates use hero background colour #0a0805; text mirrors hero treatment */
+  var ovBg = 'linear-gradient(to right,transparent 26%,rgba(10,8,5,0.88) 44%,rgba(10,8,5,0.99) 100%)';
+  var nameTxt  = '#FAF7F2';
+  var shortTxt = 'rgba(201,168,76,0.92)';
+  var fullTxt  = 'rgba(250,247,242,0.92)';
+  var hintTxt  = 'rgba(250,247,242,0.65)';
+  /* Brightened tag hues for dark slate (7b) — divider + category tag + brand chip only */
+  var TAGB = {
+    hair:'#b78ae0', skin:'#e0a468', makeup:'#f07aa8', nails:'#5ecfbf',
+    waxing:'#dcae4a', threading:'#a8aed0', grooming:'#90d8e8', signature:'#C9A84C'
+  };
+  var cc = TAGB[s.category] || s.catColor;
   var isOpen = openCards[i] || false;
   return '<div class="card' + (isOpen ? ' open' : '') + '" id="lcard' + i + '" onclick="toggleCard(' + i + ')">'
     + '<img class="card-img" loading="lazy" decoding="async" src="' + s.img + '" alt="' + s.name + '" style="object-position:' + s.imgPos + '">'
@@ -997,11 +1000,11 @@ function buildCard(s, i) {
     + '<div class="card-inner"><div class="card-spacer"></div>'
     + '<div class="card-text">'
     + '<div class="card-cat" style="color:' + cc + '">' + s.cat.toUpperCase() + '</div>'
-    + '<div class="card-name" style="color:' + nameTxt + '">' + s.name + '</div>'
+    + '<div class="card-name" style="color:' + nameTxt + ';text-shadow:0 2px 30px rgba(0,0,0,0.6)">' + s.name + '</div>'
     + '<div class="card-divider" style="background:' + cc + '"></div>'
-    + '<div class="card-short" style="color:' + shortTxt + '">' + s.short + '</div>'
+    + '<div class="card-short" style="color:' + shortTxt + ';text-shadow:0 2px 16px rgba(0,0,0,0.6)">' + s.short + '</div>'
     + '<div class="card-full" style="color:' + fullTxt + ';border-top-color:' + cc + '33">' + s.full + '</div>'
-    + '<div class="card-brand" style="background:' + cc + '18;border-color:' + cc + '55;color:' + (light ? cc : '#FAF7F2') + '">' + s.brand + '</div>'
+    + '<div class="card-brand" style="background:' + cc + '18;border-color:' + cc + '55;color:' + cc + '">' + s.brand + '</div>'
     + '</div></div>'
     + '<div class="card-expand" id="lhint' + i + '" style="color:' + hintTxt + '">' + (isOpen ? '▲ Less' : '▼ More details') + '</div>'
     + '<a class="book-btn" href="https://wa.me/919718831333?text=' + s.waText + '" target="_blank" onclick="event.stopPropagation()">Book Now →</a>'

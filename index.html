@@ -981,8 +981,16 @@ function toggleCard(i) {
 }
 
 function buildCard(s, i) {
-  /* Slate = exact category-box veil (master reference, locked 06 Jul 2026). One-to-one replacement. */
-  var ovBg = 'linear-gradient(to top,rgba(8,5,2,0.82) 0%,rgba(8,5,2,0.25) 50%,rgba(8,5,2,0.1) 100%)';
+  /* Slate = category-box veil (untouched) + adaptive feathered reading scrim (locked 06 Jul 2026).
+     Scrim peak opacity calibrated per artwork brightness — minimum intervention for effortless readability. */
+  var SCRIM = {
+    threading: 0.50, makeup: 0.45, waxing: 0.42, skin: 0.35,
+    nails: 0.32, hair: 0.28, signature: 0.20, grooming: 0.15
+  };
+  var p = SCRIM[s.category] !== undefined ? SCRIM[s.category] : 0.35;
+  var scrim = 'linear-gradient(to left,rgba(8,5,2,' + p + ') 0%,rgba(8,5,2,' + (Math.round(p * 55) / 100) + ') 30%,transparent 70%)';
+  var veil = 'linear-gradient(to top,rgba(8,5,2,0.82) 0%,rgba(8,5,2,0.25) 50%,rgba(8,5,2,0.1) 100%)';
+  var ovBg = scrim + ',' + veil;
   var nameTxt  = '#FAF7F2';
   var shortTxt = 'rgba(250,247,242,0.92)';
   var fullTxt  = 'rgba(250,247,242,0.95)';
@@ -994,10 +1002,10 @@ function buildCard(s, i) {
     + '<div class="card-overlay" style="background:' + ovBg + '"></div>'
     + '<div class="card-inner"><div class="card-spacer"></div>'
     + '<div class="card-text">'
-    + '<div class="card-cat" style="color:' + cc + '">' + s.cat.toUpperCase() + '</div>'
-    + '<div class="card-name" style="color:' + nameTxt + '">' + s.name + '</div>'
+    + '<div class="card-cat" style="color:' + cc + ';text-shadow:0 1px 3px rgba(8,5,2,0.55)">' + s.cat.toUpperCase() + '</div>'
+    + '<div class="card-name" style="color:' + nameTxt + ';text-shadow:0 1px 3px rgba(8,5,2,0.55)">' + s.name + '</div>'
     + '<div class="card-divider" style="background:' + cc + '"></div>'
-    + '<div class="card-short" style="color:' + shortTxt + '">' + s.short + '</div>'
+    + '<div class="card-short" style="color:' + shortTxt + ';text-shadow:0 1px 3px rgba(8,5,2,0.55)">' + s.short + '</div>'
     + '<div class="card-full" style="color:' + fullTxt + ';border-top-color:' + cc + '33">' + s.full + '</div>'
     + '<div class="card-brand" style="background:' + cc + '18;border-color:' + cc + '55;color:#FAF7F2">' + s.brand + '</div>'
     + '</div></div>'

@@ -1232,8 +1232,10 @@ export default {
       // ---- 18. ACCEPT CONSENTS ----
       // POST /accept-consents { sessionToken }
       // Locks all 3 consents together (Hamare Niyam, Flare Score Terms,
-      // Confidentiality). No field exists to un-accept — this is a
-      // one-way door by design, matching the locked staff lifecycle rule.
+      // Confidentiality) + writes Consents Accepted At timestamp for
+      // DPDP Act audit trail (added 07 Jul 2026). No field exists to
+      // un-accept — this is a one-way door by design, matching the
+      // locked staff lifecycle rule.
       if (request.method === 'POST' && url.pathname === '/accept-consents') {
         const body = await request.json();
         const sessionToken = String(body.sessionToken || '').trim();
@@ -1251,6 +1253,7 @@ export default {
                 'Hamare Niyam Accepted': true,
                 'Flare Score Terms Accepted': true,
                 'Confidentiality Agreed': true,
+                'Consents Accepted At': new Date().toISOString(),
               },
             }),
           }

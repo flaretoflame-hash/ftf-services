@@ -212,7 +212,10 @@
       <div class="field"><label>Your name</label><input type="text" id="nameIn" placeholder="Full name"></div>
     </div>
     <div class="field"><label>Mobile number</label><input type="tel" id="phoneIn" placeholder="10-digit mobile" maxlength="10"></div>
-    <p style="font-size:12px;color:rgba(250,247,242,.55);margin:10px 0 2px;text-align:center;">By booking, you agree to our <a href="legal.html" style="color:var(--gold);text-decoration:underline;">Terms &amp; Privacy</a>.</p>
+    <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(250,247,242,.7);margin:10px 0 2px;cursor:pointer;text-align:left;">
+      <input type="checkbox" id="consentCheck" style="margin-top:2px;width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;">
+      <span>I agree to the <a href="terms.html" style="color:var(--gold);text-decoration:underline;" target="_blank">Terms of Use</a> and <a href="privacy.html" style="color:var(--gold);text-decoration:underline;" target="_blank">Privacy Policy</a>, and consent to Flare to Flame collecting my name and phone number to manage this booking.</span>
+    </label>
     <div class="result" id="confirmResult"></div>
     <div class="navbtns">
       <button class="cta ghost" onclick="goStep(3)">Back</button>
@@ -416,6 +419,7 @@ async function confirmBooking(){
   const phone = (document.getElementById('phoneIn').value||'').replace(/[^0-9]/g,'');
   if (!name){ showResult(res,'bad','Please enter your name.'); return; }
   if (phone.length<10){ showResult(res,'bad','Please enter a valid 10-digit mobile number.'); return; }
+  if (!document.getElementById('consentCheck').checked){ showResult(res,'bad','Please agree to the Terms & Privacy Policy to continue.'); return; }
   const btn = document.getElementById('confirmBtn');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Confirming…';
   try{

@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="Flare to Flame — staff portal.">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%231A1A1A"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="%23C9A84C" text-anchor="middle">F</text></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- ============================================================
+     SENTRY — crash tracking (EU region). Session Replay OFF.
+     Text masked as belt-and-suspenders. Release tag set.
+     ▸ Before deploy: replace https://22bb0657c1fd1594233bf96296788d73@o4511612908929024.ingest.de.sentry.io/4511613195845712 with the real DSN.
+     ============================================================ -->
+<script src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js" crossorigin="anonymous"></script>
+<script>
+  if (window.Sentry) {
+    Sentry.init({
+      dsn: "https://22bb0657c1fd1594233bf96296788d73@o4511612908929024.ingest.de.sentry.io/4511613195845712",
+      release: "ftf-app@2026-06-23",
+      // Session Replay fully OFF (locked decision: no screen recording of customer data)
+      replaysSessionSampleRate: 0,
+      replaysOnErrorSampleRate: 0,
+      // Belt-and-suspenders: if replay were ever enabled, names/phones stay masked
+      integrations: [],
+      // Catch all uncaught errors; sample 100% of errors (free tier is plenty)
+      sampleRate: 1.0
+    });
+  }
+</script>
+<!-- ============================================================
+     POSTHOG — product analytics (EU region).
+     Session Replay OFF + all text masked (locked: no recording of
+     customer names/phones). Autocapture of pageviews/clicks stays ON.
+     ============================================================ -->
+<script>
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify register get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  posthog.init('phc_C8dhJbpEKTpKumf8aQEx7CvKC8rYbCVaK49eXw4xvw7b', {
+    api_host: 'https://eu.i.posthog.com',
+    person_profiles: 'identified_only',
+    disable_session_recording: true,   // replay OFF (locked decision)
+    mask_all_text: true,               // belt-and-suspenders: blank customer names/phones
+    mask_all_element_attributes: true  // also mask input attributes
+  })
+</script>
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Flare to Flame — स्टाफ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Tiro+Devanagari+Hindi:ital@0;1&family=Mukta:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #0a0805;
+  --gold: #C9A84C;
+  --offwhite: #FAF7F2;
+  --card: rgba(250, 247, 242, 0.04);
+  --card-border: rgba(201, 168, 76, 0.22);
+  --muted: rgba(250, 247, 242, 0.55);
+  --green: #6FBF73;
+  --amber: #D9A441;
+  --red: #C96B5A;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at 50% -10%, rgba(201,168,76,0.10) 0%, rgba(10,8,5,0) 55%);
+  color: var(--offwhite);
+  font-family: 'Mukta', sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.wrap { max-width: 440px; margin: 0 auto; padding: 28px 20px 60px; }
+
+/* ---------- Brand header ---------- */
+.brand { text-align: center; margin-bottom: 8px; }
+.brand h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  color: var(--offwhite);
+}
+.brand h1 span { color: var(--gold); }
+.brand .sub {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.gold-line {
+  width: 56px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 18px auto 28px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 24px 20px;
+  margin-bottom: 18px;
+  backdrop-filter: blur(6px);
+  animation: breathe 17s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { border-color: rgba(201,168,76,0.22); }
+  50% { border-color: rgba(201,168,76,0.40); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
+}
+
+.card h2 {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-family: 'Tiro Devanagari Hindi', serif;
+}
+
+input {
+  width: 100%;
+  background: rgba(250,247,242,0.06);
+  border: 1px solid rgba(201,168,76,0.30);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--offwhite);
+  font-family: 'Mukta', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+input:focus { border-color: var(--gold); }
+input::placeholder { color: rgba(250,247,242,0.3); }
+
+.otp-input { text-align: center; font-size: 26px; letter-spacing: 0.5em; }
+
+.btn {
+  width: 100%;
+  margin-top: 16px;
+  background: var(--gold);
+  color: #181203;
+  border: none;
+  border-radius: 12px;
+  padding: 15px;
+  font-family: 'Mukta', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .2s, transform .1s;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1.5px solid rgba(201,168,76,0.5);
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.msg { margin-top: 12px; font-size: 14px; line-height: 1.5; font-family: 'Tiro Devanagari Hindi', serif; }
+.msg.err { color: var(--red); }
+.msg.ok  { color: var(--green); }
+.msg.dev { color: var(--amber); }
+
+/* ---------- Dashboard ---------- */
+.hello {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 24px;
+  text-align: center;
+}
+.hello b { color: var(--gold); font-weight: 400; }
+.hello-sub { text-align: center; color: var(--muted); font-size: 13px; margin-top: 4px; font-family: 'Tiro Devanagari Hindi', serif; }
+
+/* availability buttons */
+.avail-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 6px; }
+.avail-btn {
+  border: 1px solid rgba(250,247,242,0.18);
+  background: rgba(250,247,242,0.04);
+  color: var(--offwhite);
+  border-radius: 14px;
+  padding: 16px 6px 13px;
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 15px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .2s, background .2s;
+}
+.avail-btn .dot {
+  display: block; width: 10px; height: 10px;
+  border-radius: 50%; margin: 0 auto 8px;
+  background: rgba(250,247,242,0.25);
+}
+.avail-btn[data-v="उपलब्ध"] .dot   { background: var(--green); }
+.avail-btn[data-v="ब्रेक पर"] .dot  { background: var(--amber); }
+.avail-btn[data-v="आज छुट्टी"] .dot { background: var(--red); }
+.avail-btn.sel {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.12);
+}
+
+/* team / status lists */
+.row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(250,247,242,0.07);
+}
+.row:last-child { border-bottom: none; }
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+  border: 1px solid rgba(201,168,76,0.35);
+  background: rgba(201,168,76,0.10);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px; color: var(--gold);
+}
+.sched-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 0; border-bottom: 1px solid rgba(250,247,242,0.07);
+}
+.sched-row:last-child { border-bottom: none; }
+.sched-left { flex: 1; min-width: 0; }
+.sched-time { color: var(--gold); font-size: 13px; font-family: 'Tiro Devanagari Hindi', serif; }
+.sched-client { color: var(--offwhite); font-size: 15px; margin-top: 2px; }
+.sched-dur { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.badge {
+  font-size: 11px; padding: 5px 10px; border-radius: 20px; white-space: nowrap;
+  font-family: 'Tiro Devanagari Hindi', serif; border: 1px solid transparent;
+}
+.badge[data-s="Booked"]      { color: var(--amber); border-color: var(--amber); background: rgba(217,164,65,0.1); }
+.badge[data-s="In Progress"] { color: var(--gold);  border-color: var(--gold);  background: rgba(201,168,76,0.12); }
+.badge[data-s="Completed"]   { color: var(--green); border-color: var(--green); background: rgba(111,191,115,0.1); }
+.badge[data-s="Cancelled"], .badge[data-s="No Show"] { color: var(--red); border-color: var(--red); background: rgba(201,107,90,0.1); }
+.badge.tap { cursor: pointer; }
+.empty-note { color: var(--muted); font-size: 13px; text-align: center; padding: 14px 0; font-family: 'Tiro Devanagari Hindi', serif; }
+.consent-row {
+  display: flex; align-items: flex-start; gap: 10px; text-align: left;
+  padding: 12px 4px; border-bottom: 1px solid rgba(250,247,242,0.07); cursor: pointer;
+}
+.consent-row:last-of-type { border-bottom: none; }
+.consent-row input.consent-check { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--gold); flex-shrink: 0; }
+.consent-row span { font-size: 14px; color: var(--offwhite); line-height: 1.5; font-family: 'Tiro Devanagari Hindi', serif; }
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.tab-btn {
+  flex: 1; padding: 9px; border-radius: 10px; border: 1px solid rgba(250,247,242,0.15);
+  background: transparent; color: var(--muted); font-family: 'Tiro Devanagari Hindi', serif; font-size: 13px; cursor: pointer;
+}
+.tab-btn.sel { background: rgba(201,168,76,0.14); border-color: var(--gold); color: var(--gold); }
+.earn-amount { font-family: 'Cormorant Garamond', serif; font-size: 34px; color: var(--offwhite); text-align: center; font-weight: 700; }
+.earn-sub { text-align: center; color: var(--muted); font-size: 12px; margin-top: 4px; font-family: 'Tiro Devanagari Hindi', serif; }
+.score-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(250,247,242,0.07); }
+.score-row:last-child { border-bottom: none; }
+.score-label { font-size: 13px; color: var(--offwhite); font-family: 'Tiro Devanagari Hindi', serif; }
+.score-val { font-size: 15px; color: var(--gold); font-weight: 600; }
+.score-val.soon { color: var(--muted); font-size: 12px; font-weight: 400; font-family: 'Tiro Devanagari Hindi', serif; }
+.lb-title { font-size: 12px; color: var(--muted); margin-bottom: 8px; font-family: 'Tiro Devanagari Hindi', serif; }
+.lb-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.lb-bar-track { flex: 1; height: 6px; border-radius: 4px; background: rgba(250,247,242,0.08); overflow: hidden; }
+.lb-bar-fill { height: 100%; background: var(--gold); }
+.lb-bar-pct { font-size: 11px; color: var(--muted); width: 34px; text-align: right; }
+
+
+.bill-btn {
+  font-size: 11px; padding: 5px 10px; border-radius: 20px; margin-top: 6px;
+  border: 1px solid var(--gold); color: var(--gold); background: rgba(201,168,76,0.1);
+  font-family: 'Tiro Devanagari Hindi', serif; cursor: pointer; display: inline-block;
+}
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 50;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: var(--bg); border: 1px solid var(--card-border); border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px; padding: 22px 20px 28px; box-sizing: border-box;
+}
+.modal-box h3 { font-family: 'Tiro Devanagari Hindi', serif; color: var(--offwhite); font-size: 18px; margin: 0 0 14px; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; font-family: 'Tiro Devanagari Hindi', serif; }
+.modal-field select, .modal-field input {
+  width: 100%; box-sizing: border-box; background: rgba(250,247,242,0.06); color: var(--offwhite);
+  border: 1px solid rgba(250,247,242,0.18); border-radius: 10px; padding: 10px 12px; font-size: 15px;
+}
+.modal-summary { color: var(--gold); font-size: 14px; margin: 10px 0; font-family: 'Tiro Devanagari Hindi', serif; min-height: 18px; }
+.modal-btns { display: flex; gap: 10px; margin-top: 6px; }
+.modal-btns button {
+  flex: 1; padding: 13px; border-radius: 12px; border: none; font-size: 15px;
+  font-family: 'Tiro Devanagari Hindi', serif; cursor: pointer;
+}
+.modal-btns .cancel { background: rgba(250,247,242,0.08); color: var(--offwhite); }
+.modal-btns .confirm { background: var(--gold); color: #1A1A1A; font-weight: 600; }
+
+
+.row .info { flex: 1; min-width: 0; }
+.row .nm { font-size: 16px; font-weight: 500; }
+.row .rl { font-size: 13px; color: var(--muted); }
+.pill {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 12.5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(250,247,242,0.18);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.pill.g { color: var(--green); border-color: rgba(111,191,115,0.45); }
+.pill.a { color: var(--amber); border-color: rgba(217,164,65,0.45); }
+.pill.r { color: var(--red);  border-color: rgba(201,107,90,0.45); }
+
+.skeleton {
+  height: 56px; border-radius: 12px;
+  background: linear-gradient(90deg, rgba(250,247,242,0.04) 25%, rgba(250,247,242,0.09) 50%, rgba(250,247,242,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  margin-bottom: 10px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.empty { color: var(--muted); font-size: 14px; text-align: center; padding: 14px 0; font-family: 'Tiro Devanagari Hindi', serif; }
+
+.logout {
+  display: block; margin: 8px auto 0;
+  background: none; border: none;
+  color: var(--muted); font-size: 14px;
+  font-family: 'Tiro Devanagari Hindi', serif;
+  cursor: pointer; text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <h1>Flare <span>to</span> Flame</h1>
+    <div class="sub">स्टाफ ऐप</div>
+  </div>
+  <div class="gold-line"></div>
+
+  <!-- ================= SCREEN 1: PHONE ================= -->
+  <div id="scrPhone" class="card">
+    <h2>लॉगिन करें</h2>
+    <label for="phone">अपना 10 अंकों का फ़ोन नंबर डालें</label>
+    <input id="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" maxlength="12">
+    <button class="btn" id="btnSend">कोड भेजें</button>
+    <div class="msg" id="msgPhone"></div>
+  </div>
+
+  <!-- ================= SCREEN 2: OTP ================= -->
+  <div id="scrOtp" class="card hidden">
+    <h2>कोड डालें</h2>
+    <label for="otp">WhatsApp पर भेजा गया 4 अंकों का कोड डालें</label>
+    <input id="otp" class="otp-input" type="tel" inputmode="numeric" placeholder="••••" maxlength="4">
+    <button class="btn" id="btnVerify">लॉगिन करें</button>
+    <button class="btn btn-ghost" id="btnBack">वापस जाएँ</button>
+    <div class="msg" id="msgOtp"></div>
+  </div>
+
+  <!-- ====== SCREEN: JOIN CONSENTS (added 03 Jul 2026) ================= -->
+  <div id="scrConsent" class="card hidden">
+    <h2>पहली बार आना है 🙏</h2>
+    <p style="color:var(--muted);font-size:14px;margin:6px 0 16px;">आगे बढ़ने से पहले, कृपया इन तीन बातों को पढ़ें और मानें।</p>
+
+    <label class="consent-row">
+      <input type="checkbox" id="cnHamareNiyam" class="consent-check">
+      <span><b>हमारे नियम</b> — स्टाफ आचार संहिता। <span style="color:var(--muted);font-size:12px;">(पूरा पाठ जल्द जुड़ेगा)</span></span>
+    </label>
+    <label class="consent-row">
+      <input type="checkbox" id="cnFlareScore" class="consent-check">
+      <span><b>Flare Score नियम</b> — आपका प्रदर्शन कैसे मापा जाता है। <span style="color:var(--muted);font-size:12px;">(पूरा पाठ जल्द जुड़ेगा)</span></span>
+    </label>
+    <label class="consent-row">
+      <input type="checkbox" id="cnConfidentiality" class="consent-check">
+      <span><b>गोपनीयता समझौता</b> — क्लाइंट व सैलून की जानकारी गुप्त रखना। <span style="color:var(--muted);font-size:12px;">(पूरा पाठ जल्द जुड़ेगा)</span></span>
+    </label>
+
+    <button class="btn" id="btnAcceptConsents" disabled>मैं सहमत हूँ और आगे बढ़ता हूँ</button>
+    <div class="msg" id="msgConsent"></div>
+  </div>
+
+  <!-- ================= SCREEN 3: DASHBOARD ================= -->
+  <div id="scrDash" class="hidden">
+
+    <div class="card">
+      <div class="hello">नमस्ते, <b id="staffName"></b> 🙏</div>
+      <div class="hello-sub">आज का दिन शुभ हो</div>
+    </div>
+
+    <div class="card" id="attendCard">
+      <h2>उपस्थिति</h2>
+      <div id="attendState" class="empty-note">लोड हो रहा है…</div>
+      <button class="btn" id="btnClockIn" style="display:none;">क्लॉक इन करें</button>
+      <button class="btn btn-ghost" id="btnClockOut" style="display:none;">क्लॉक आउट करें</button>
+      <div class="msg" id="msgAttend"></div>
+    </div>
+
+    <div class="card">
+      <h2 id="schedTitle">आज की बुकिंग</h2>
+      <div id="schedList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>मेरी कमाई</h2>
+      <div class="tabs">
+        <button class="tab-btn sel" data-range="today">आज</button>
+        <button class="tab-btn" data-range="week">हफ्ता</button>
+        <button class="tab-btn" data-range="month">महीना</button>
+      </div>
+      <div id="earningsAmount" class="earn-amount">—</div>
+      <div id="earningsSub" class="earn-sub"></div>
+    </div>
+
+    <div class="card">
+      <h2>मेरा स्कोर</h2>
+      <div id="scoreList"><div class="empty-note">लोड हो रहा है…</div></div>
+      <div id="leaderboardWrap" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>आज आपकी स्थिति</h2>
+      <div class="avail-row" id="availRow">
+        <button class="avail-btn" data-v="उपलब्ध"><span class="dot"></span>उपलब्ध</button>
+        <button class="avail-btn" data-v="ब्रेक पर"><span class="dot"></span>ब्रेक पर</button>
+        <button class="avail-btn" data-v="आज छुट्टी"><span class="dot"></span>आज छुट्टी</button>
+      </div>
+      <div class="msg" id="msgAvail"></div>
+    </div>
+
+    <div class="card">
+      <h2>हमारी टीम</h2>
+      <div id="teamList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>अभी कौन उपलब्ध है</h2>
+      <div id="statusList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </div>
+
+    <button class="logout" id="btnLogout">लॉग आउट करें</button>
+  </div>
+
+</div>
+
+<!-- BILL MODAL (added 02 Jul 2026) -->
+<div class="modal-overlay hidden" id="billModal">
+  <div class="modal-box">
+    <h3>बिल बनाएं</h3>
+    <div class="modal-field">
+      <label>छूट (Discount)</label>
+      <select id="billDiscount">
+        <option value="None">कोई छूट नहीं</option>
+        <option value="10%">10%</option>
+        <option value="20%">20%</option>
+        <option value="30%">30%</option>
+        <option value="Flat 100">₹100 फ्लैट</option>
+        <option value="Flat 200">₹200 फ्लैट</option>
+        <option value="Flat 500">₹500 फ्लैट</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>टिप (Tip) — ₹</label>
+      <input type="number" id="billTip" min="0" value="0" inputmode="numeric">
+    </div>
+    <div class="modal-field">
+      <label>भुगतान का तरीका (Payment Mode)</label>
+      <select id="billPaymentMode">
+        <option value="Cash">कैश</option>
+        <option value="UPI">UPI</option>
+        <option value="Card">कार्ड</option>
+      </select>
+    </div>
+    <div class="modal-summary" id="billMsg"></div>
+    <div class="modal-btns">
+      <button class="cancel" id="billCancel">रद्द करें</button>
+      <button class="confirm" id="billConfirm">बिल बनाएं</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://ftf-airtable.flaretoflame.workers.dev';
+// SECURITY (11 Oct 2026): every value that comes from the server is escaped before it goes into the page.
+function esc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+}
+
+const $ = id => document.getElementById(id);
+const show = id => $(id).classList.remove('hidden');
+const hide = id => $(id).classList.add('hidden');
+
+let currentPhone = '';
+
+function setMsg(id, text, cls) {
+  const el = $(id);
+  el.textContent = text || '';
+  el.className = 'msg' + (cls ? ' ' + cls : '');
+}
+
+function normalizePhone(p) { return String(p || '').replace(/[^0-9]/g, ''); }
+
+/* ---------------- SESSION RESTORE ---------------- */
+const savedToken = sessionStorage.getItem('ftf_token');
+const savedName = sessionStorage.getItem('ftf_name');
+const savedRole = sessionStorage.getItem('ftf_role');
+const savedConsented = sessionStorage.getItem('ftf_consented');
+if (savedToken && savedName) {
+  if (savedConsented === '0') {
+    hide('scrPhone'); hide('scrOtp'); show('scrConsent');
+  } else {
+    openDashboard(savedName, savedRole || '');
+  }
+}
+
+/* ---------------- STEP 1: SEND OTP ---------------- */
+$('btnSend').addEventListener('click', async () => {
+  const phone = normalizePhone($('phone').value).slice(-10);
+  if (phone.length !== 10) {
+    setMsg('msgPhone', '10 अंकों का सही नंबर डालें', 'err');
+    return;
+  }
+  $('btnSend').disabled = true;
+  setMsg('msgPhone', 'जाँच हो रही है…');
+
+  try {
+    // lookup first — friendly error if not registered
+    const lr = await fetch(API + '/staff-lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const lookup = await lr.json();
+    if (!lookup.found) {
+      setMsg('msgPhone', 'यह नंबर रजिस्टर नहीं है। मालिक से संपर्क करें।', 'err');
+      $('btnSend').disabled = false;
+      return;
+    }
+
+    const sr = await fetch(API + '/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const sent = await sr.json();
+    if (!sent.ok) {
+      setMsg('msgPhone', 'कोड भेजने में दिक्कत हुई। फिर कोशिश करें।', 'err');
+      $('btnSend').disabled = false;
+      return;
+    }
+
+    currentPhone = phone;
+    hide('scrPhone'); show('scrOtp');
+    $('otp').value = ''; $('otp').focus();
+
+    if (sent.devOtp) {
+      // testing mode only — disappears automatically when Composio is wired
+      setMsg('msgOtp', 'टेस्टिंग कोड: ' + sent.devOtp, 'dev');
+    } else {
+      setMsg('msgOtp', 'कोड WhatsApp पर भेज दिया गया है', 'ok');
+    }
+  } catch (e) {
+    setMsg('msgPhone', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
+  }
+  $('btnSend').disabled = false;
+});
+
+/* ---------------- STEP 2: VERIFY OTP ---------------- */
+$('btnVerify').addEventListener('click', async () => {
+  const otp = $('otp').value.trim();
+  if (otp.length !== 4) {
+    setMsg('msgOtp', '4 अंकों का कोड डालें', 'err');
+    return;
+  }
+  $('btnVerify').disabled = true;
+  setMsg('msgOtp', 'जाँच हो रही है…');
+
+  try {
+    const r = await fetch(API + '/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: currentPhone, otp })
+    });
+    const res = await r.json();
+    if (!res.ok || !res.verified) {
+      setMsg('msgOtp', res.error === 'Incorrect code'
+        ? 'कोड गलत है। फिर से डालें।'
+        : 'कोड की समय-सीमा खत्म हो गई। वापस जाकर नया कोड लें।', 'err');
+      $('btnVerify').disabled = false;
+      return;
+    }
+
+    sessionStorage.setItem('ftf_token', res.sessionToken);
+    sessionStorage.setItem('ftf_name', res.name);
+    sessionStorage.setItem('ftf_id', res.id);
+    sessionStorage.setItem('ftf_role', res.role || '');
+    const c = res.consents || {};
+    const allConsented = !!(c.hamareNiyam && c.flareScoreTerms && c.confidentiality);
+    sessionStorage.setItem('ftf_consented', allConsented ? '1' : '0');
+    if (!allConsented) {
+      hide('scrPhone'); hide('scrOtp'); show('scrConsent');
+    } else {
+      openDashboard(res.name, res.role || '');
+    }
+  } catch (e) {
+    setMsg('msgOtp', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
+  }
+  $('btnVerify').disabled = false;
+});
+
+$('btnBack').addEventListener('click', () => {
+  hide('scrOtp'); show('scrPhone');
+  setMsg('msgPhone', ''); setMsg('msgOtp', '');
+});
+
+/* ---------------- DASHBOARD ---------------- */
+function openDashboard(name, role) {
+  hide('scrPhone'); hide('scrOtp'); show('scrDash');
+  $('staffName').textContent = name;
+  $('schedTitle').textContent = (role === 'Receptionist') ? 'आज की सभी बुकिंग' : 'मेरी आज की बुकिंग';
+  loadTeam();
+  loadStatus();
+  loadSchedule(role);
+  loadAttendance();
+  loadEarnings('today');
+  loadScore();
+}
+
+/* availability buttons */
+document.querySelectorAll('.avail-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const value = btn.dataset.v;
+    const token = sessionStorage.getItem('ftf_token');
+    if (!token) { logout(); return; }
+
+    // B4: OPTIMISTIC — highlight the tapped button instantly, then confirm in
+    // the background. Remember the previous selection so we can roll back.
+    const prevSel = document.querySelector('.avail-btn.sel');
+    document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    setMsg('msgAvail', 'सेव हो रहा है…');
+
+    try {
+      const r = await fetch(API + '/set-availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionToken: token, availability: value })
+      });
+      const res = await r.json();
+      if (res.ok) {
+        setMsg('msgAvail', 'आपकी स्थिति सेव हो गई ✓', 'ok');
+        loadStatus();
+      } else if (r.status === 401) {
+        setMsg('msgAvail', 'सेशन खत्म हो गया। दोबारा लॉगिन करें।', 'err');
+        setTimeout(logout, 1500);
+      } else {
+        document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('sel'));
+        if (prevSel) prevSel.classList.add('sel');
+        setMsg('msgAvail', 'सेव नहीं हुआ। फिर कोशिश करें।', 'err');
+      }
+    } catch (e) {
+      document.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('sel'));
+      if (prevSel) prevSel.classList.add('sel');
+      setMsg('msgAvail', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
+    }
+  });
+});
+
+/* team list */
+async function loadTeam() {
+  try {
+    const r = await fetch(API + '/team');
+    const data = await r.json();
+    const list = $('teamList');
+    list.innerHTML = '';
+    if (!data.team || data.team.length === 0) {
+      list.innerHTML = '<div class="empty">अभी टीम की जानकारी नहीं है</div>';
+      return;
+    }
+    data.team.forEach(m => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const av = m.photo
+        ? '<img class="avatar" src="' + m.photo + '" alt="">'
+        : '<div class="avatar">' + (m.name ? m.name[0] : '?') + '</div>';
+      row.innerHTML = av +
+        '<div class="info"><div class="nm">' + esc(m.name) + '</div>' +
+        '<div class="rl">' + esc(m.role || '') + '</div></div>';
+      list.appendChild(row);
+    });
+  } catch (e) {
+    $('teamList').innerHTML = '<div class="empty">जानकारी लोड नहीं हुई</div>';
+  }
+}
+
+/* status list */
+async function loadStatus() {
+  try {
+    const r = await fetch(API + '/staff-status');
+    const data = await r.json();
+    const list = $('statusList');
+    list.innerHTML = '';
+    if (!data.status || data.status.length === 0) {
+      list.innerHTML = '<div class="empty">अभी कोई जानकारी नहीं है</div>';
+      return;
+    }
+    const myId = sessionStorage.getItem('ftf_id');
+    data.status.forEach(s => {
+      if (s.staffStatus !== 'Active') return; // only employed staff
+      const row = document.createElement('div');
+      row.className = 'row';
+      let pillCls = '', pillTxt = '—';
+      if (s.availability === 'उपलब्ध')      { pillCls = 'g'; pillTxt = 'उपलब्ध'; }
+      else if (s.availability === 'ब्रेक पर') { pillCls = 'a'; pillTxt = 'ब्रेक पर'; }
+      else if (s.availability === 'आज छुट्टी'){ pillCls = 'r'; pillTxt = 'आज छुट्टी'; }
+      row.innerHTML =
+        '<div class="info"><div class="nm">' + esc(s.name) + '</div></div>' +
+        '<span class="pill ' + esc(pillCls) + '">' + esc(pillTxt) + '</span>';
+      list.appendChild(row);
+
+      // highlight my own current availability on the buttons
+      if (s.id === myId && s.availability) {
+        document.querySelectorAll('.avail-btn').forEach(b => {
+          b.classList.toggle('sel', b.dataset.v === s.availability);
+        });
+      }
+    });
+    if (!list.children.length) {
+      list.innerHTML = '<div class="empty">अभी कोई जानकारी नहीं है</div>';
+    }
+  } catch (e) {
+    $('statusList').innerHTML = '<div class="empty">जानकारी लोड नहीं हुई</div>';
+  }
+}
+
+/* ---------------- SCHEDULE (added 02 Jul 2026) ---------------- */
+const STATUS_CYCLE = ['Booked', 'In Progress', 'Completed', 'No Show', 'Cancelled'];
+const STATUS_HI = {
+  'Booked': 'बुक हुआ', 'In Progress': 'चल रहा है', 'Completed': 'पूरा हुआ',
+  'Cancelled': 'रद्द', 'No Show': 'नहीं आया'
+};
+
+async function loadSchedule(role) {
+  const token = sessionStorage.getItem('ftf_token');
+  const list = $('schedList');
+  if (!token) { list.innerHTML = '<div class="empty-note">लॉगिन ज़रूरी है</div>'; return; }
+  try {
+    const r = await fetch(API + '/day-schedule?sessionToken=' + encodeURIComponent(token));
+    const data = await r.json();
+    list.innerHTML = '';
+    if (!data.ok || !data.appointments || data.appointments.length === 0) {
+      list.innerHTML = '<div class="empty-note">आज कोई बुकिंग नहीं है</div>';
+      return;
+    }
+    const canEdit = (role === 'Receptionist');
+    data.appointments.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'sched-row';
+      const timeTxt = a.timeSlot || (a.startTime ? a.startTime.slice(11, 16) : '');
+      const billBtn = (canEdit && a.status === 'Completed')
+        ? '<button class="bill-btn" data-bill-id="' + esc(a.appointmentId) + '">बिल बनाएं</button>'
+        : '';
+      row.innerHTML =
+        '<div class="sched-left">' +
+          '<div class="sched-time">' + esc(timeTxt) + '</div>' +
+          '<div class="sched-client">' + esc(a.clientName) + '</div>' +
+          '<div class="sched-dur">' + esc(a.duration || 0) + ' मिनट</div>' +
+          billBtn +
+        '</div>' +
+        '<span class="badge' + (canEdit ? ' tap' : '') + '" data-s="' + esc(a.status) + '" data-id="' + esc(a.appointmentId) + '">' +
+          esc(STATUS_HI[a.status] || a.status) +
+        '</span>';
+      list.appendChild(row);
+    });
+
+    if (canEdit) {
+      list.querySelectorAll('.bill-btn').forEach(btn => {
+        btn.addEventListener('click', () => openBillModal(btn.dataset.billId, role));
+      });
+    }
+
+    if (canEdit) {
+      list.querySelectorAll('.badge.tap').forEach(badge => {
+        badge.addEventListener('click', async () => {
+          const cur = badge.dataset.s;
+          const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
+          badge.textContent = STATUS_HI[next] || next; // optimistic
+          badge.dataset.s = next;
+          try {
+            const res = await fetch(API + '/update-appointment-status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionToken: token, appointmentId: badge.dataset.id, status: next })
+            });
+            const out = await res.json();
+            if (!out.ok) { loadSchedule(role); } // revert by reloading on failure
+          } catch (e) { loadSchedule(role); }
+        });
+      });
+    }
+  } catch (e) {
+    list.innerHTML = '<div class="empty-note">शेड्यूल लोड नहीं हुआ</div>';
+  }
+}
+
+/* ---------------- BILLING MODAL (added 02 Jul 2026) ---------------- */
+let billApptId = null, billRole = null;
+
+function openBillModal(appointmentId, role) {
+  billApptId = appointmentId; billRole = role;
+  $('billDiscount').value = 'None';
+  $('billTip').value = '0';
+  $('billPaymentMode').value = 'Cash';
+  setMsg('billMsg', '');
+  $('billModal').classList.remove('hidden');
+}
+
+function closeBillModal() {
+  $('billModal').classList.add('hidden');
+  billApptId = null;
+}
+
+$('billCancel').addEventListener('click', closeBillModal);
+
+$('billConfirm').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token || !billApptId) { closeBillModal(); return; }
+  const discountType = $('billDiscount').value;
+  const tipAmount = Number($('billTip').value) || 0;
+  const paymentMode = $('billPaymentMode').value;
+
+  $('billConfirm').disabled = true;
+  setMsg('billMsg', 'बिल बन रहा है…');
+
+  try {
+    const r = await fetch(API + '/create-bill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken: token, appointmentId: billApptId, discountType, tipAmount, paymentMode })
+    });
+    const res = await r.json();
+    if (res.ok) {
+      let msg = 'बिल बन गया ✓ कुल: ₹' + res.finalAmount;
+      if (res.commissionBreakdown && res.commissionBreakdown.length > 0) {
+        msg += '<br><span style="font-size:12px;">कमीशन: ' +
+          res.commissionBreakdown.map(function(c){ return c.staffName + ' ₹' + c.commissionAmount; }).join(' · ') +
+          '</span>';
+      }
+      $('billMsg').innerHTML = msg;
+      $('billMsg').className = 'modal-summary ok';
+      setTimeout(() => { closeBillModal(); loadSchedule(billRole); }, 2200);
+    } else {
+      setMsg('billMsg', 'बिल नहीं बना। फिर कोशिश करें।', 'err');
+      $('billConfirm').disabled = false;
+    }
+  } catch (e) {
+    setMsg('billMsg', 'नेटवर्क में दिक्कत है।', 'err');
+    $('billConfirm').disabled = false;
+  }
+});
+
+/* ---------------- JOIN CONSENTS (added 03 Jul 2026) ---------------- */
+document.querySelectorAll('.consent-check').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const all = document.querySelectorAll('.consent-check');
+    const allChecked = Array.from(all).every(c => c.checked);
+    $('btnAcceptConsents').disabled = !allChecked;
+  });
+});
+
+$('btnAcceptConsents').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) { logout(); return; }
+  $('btnAcceptConsents').disabled = true;
+  setMsg('msgConsent', 'सेव हो रहा है…');
+  try {
+    const r = await fetch(API + '/accept-consents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken: token })
+    });
+    const res = await r.json();
+    if (res.ok) {
+      sessionStorage.setItem('ftf_consented', '1');
+      const name = sessionStorage.getItem('ftf_name');
+      const role = sessionStorage.getItem('ftf_role');
+      hide('scrConsent');
+      openDashboard(name, role);
+    } else {
+      setMsg('msgConsent', 'सेव नहीं हुआ। फिर कोशिश करें।', 'err');
+      $('btnAcceptConsents').disabled = false;
+    }
+  } catch (e) {
+    setMsg('msgConsent', 'नेटवर्क में दिक्कत है।', 'err');
+    $('btnAcceptConsents').disabled = false;
+  }
+});
+
+/* ---------------- ATTENDANCE (added 03 Jul 2026) ---------------- */
+async function loadAttendance() {
+  const token = sessionStorage.getItem('ftf_token');
+  const stateEl = $('attendState');
+  if (!token) return;
+  try {
+    const r = await fetch(API + '/attendance-today?sessionToken=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (!data.ok) { stateEl.textContent = 'लोड नहीं हुआ'; return; }
+    if (!data.clockedIn) {
+      stateEl.textContent = 'आज अभी क्लॉक इन नहीं किया';
+      $('btnClockIn').style.display = 'block';
+      $('btnClockOut').style.display = 'none';
+    } else if (data.clockedIn && !data.checkOutTime) {
+      stateEl.textContent = 'क्लॉक इन: ' + data.checkInTime + ' बजे';
+      $('btnClockIn').style.display = 'none';
+      $('btnClockOut').style.display = 'block';
+    } else {
+      stateEl.textContent = 'आज पूरा हुआ — ' + data.checkInTime + ' से ' + data.checkOutTime + ' तक';
+      $('btnClockIn').style.display = 'none';
+      $('btnClockOut').style.display = 'none';
+    }
+  } catch (e) {
+    stateEl.textContent = 'लोड नहीं हुआ';
+  }
+}
+
+$('btnClockIn').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) { logout(); return; }
+  $('btnClockIn').disabled = true;
+  setMsg('msgAttend', 'क्लॉक इन हो रहा है…');
+  try {
+    const r = await fetch(API + '/clock-in', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken: token })
+    });
+    const res = await r.json();
+    if (res.ok) { setMsg('msgAttend', 'क्लॉक इन हो गया ✓', 'ok'); loadAttendance(); }
+    else { setMsg('msgAttend', res.error || 'नहीं हुआ, फिर कोशिश करें।', 'err'); $('btnClockIn').disabled = false; }
+  } catch (e) { setMsg('msgAttend', 'नेटवर्क में दिक्कत है।', 'err'); $('btnClockIn').disabled = false; }
+});
+
+$('btnClockOut').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) { logout(); return; }
+  $('btnClockOut').disabled = true;
+  setMsg('msgAttend', 'क्लॉक आउट हो रहा है…');
+  try {
+    const r = await fetch(API + '/clock-out', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionToken: token })
+    });
+    const res = await r.json();
+    if (res.ok) { setMsg('msgAttend', 'क्लॉक आउट हो गया ✓', 'ok'); loadAttendance(); }
+    else { setMsg('msgAttend', res.error || 'नहीं हुआ, फिर कोशिश करें।', 'err'); $('btnClockOut').disabled = false; }
+  } catch (e) { setMsg('msgAttend', 'नेटवर्क में दिक्कत है।', 'err'); $('btnClockOut').disabled = false; }
+});
+
+/* ---------------- MY EARNINGS (added 03 Jul 2026) ---------------- */
+async function loadEarnings(range) {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) return;
+  const amountEl = $('earningsAmount'), subEl = $('earningsSub');
+  amountEl.textContent = '…';
+  try {
+    const r = await fetch(API + '/my-earnings?sessionToken=' + encodeURIComponent(token) + '&range=' + range);
+    const data = await r.json();
+    if (!data.ok) { amountEl.textContent = '—'; subEl.textContent = 'लोड नहीं हुआ'; return; }
+    amountEl.textContent = '₹' + data.totalEarnings;
+    let sub = data.billCount + ' बिल';
+    if (data.commissionPreview !== null) sub += ' · अनुमानित कमीशन ₹' + data.commissionPreview;
+    subEl.textContent = sub;
+  } catch (e) {
+    amountEl.textContent = '—'; subEl.textContent = 'लोड नहीं हुआ';
+  }
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    loadEarnings(btn.dataset.range);
+  });
+});
+
+/* ---------------- MY SCORE (added 03 Jul 2026, partial + honest) ---------------- */
+async function loadScore() {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) return;
+  const list = $('scoreList');
+  try {
+    const r = await fetch(API + '/my-score?sessionToken=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (!data.ok) { list.innerHTML = '<div class="empty-note">लोड नहीं हुआ</div>'; return; }
+    const rows = [];
+    rows.push(rowHtml('राजस्व लक्ष्य (Revenue)', data.revenueAchievementPct !== null ? data.revenueAchievementPct + '%' : null));
+    rows.push(rowHtml('क्लाइंट रेटिंग', data.clientRatingAvg !== null ? data.clientRatingAvg + ' / 5' : null));
+    rows.push(rowHtml('उपस्थिति (Attendance)', data.attendancePct !== null ? data.attendancePct + '%' : null));
+    rows.push(rowHtml('क्लाइंट रिपीट दर', null));
+    rows.push(rowHtml('रिटेल अटैच', null));
+    list.innerHTML = rows.join('');
+    loadLeaderboard();
+  } catch (e) {
+    list.innerHTML = '<div class="empty-note">लोड नहीं हुआ</div>';
+  }
+}
+
+function rowHtml(label, val) {
+  if (val === null) {
+    return '<div class="score-row"><span class="score-label">' + label + '</span><span class="score-val soon">जल्द आएगा</span></div>';
+  }
+  return '<div class="score-row"><span class="score-label">' + label + '</span><span class="score-val">' + esc(val) + '</span></div>';
+}
+
+async function loadLeaderboard() {
+  const wrap = $('leaderboardWrap');
+  try {
+    const r = await fetch(API + '/leaderboard');
+    const data = await r.json();
+    if (!data.ok || !data.leaderboard || data.leaderboard.length === 0) { wrap.innerHTML = ''; return; }
+    let html = '<div class="lb-title">टीम — लक्ष्य का % (गुमनाम)</div>';
+    data.leaderboard.forEach(pct => {
+      html += '<div class="lb-bar-row"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:' + Math.min(100, pct) + '%;"></div></div><div class="lb-bar-pct">' + pct + '%</div></div>';
+    });
+    wrap.innerHTML = html;
+  } catch (e) { wrap.innerHTML = ''; }
+}
+
+/* logout */
+function logout() {
+  sessionStorage.removeItem('ftf_token');
+  sessionStorage.removeItem('ftf_name');
+  sessionStorage.removeItem('ftf_id');
+  sessionStorage.removeItem('ftf_role');
+  sessionStorage.removeItem('ftf_consented');
+  hide('scrDash'); show('scrPhone');
+  $('phone').value = ''; $('otp').value = '';
+  setMsg('msgPhone', ''); setMsg('msgAvail', '');
+}
+$('btnLogout').addEventListener('click', logout);
+</script>
+</body>
+</html>

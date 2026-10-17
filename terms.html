@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Terms of Use — Flare to Flame.">
+<title>Terms of Use · Flare to Flame</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:#0a0805;font-family:'Jost',sans-serif;min-height:100vh;color:#FAF7F2;}
+
+.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.amb::before{content:'';position:absolute;right:-60px;top:40px;width:320px;height:580px;background:radial-gradient(ellipse at 55% 35%,rgba(130,55,175,0.18) 0%,rgba(90,25,135,0.07) 45%,transparent 70%);filter:blur(45px);animation:drift 10s ease-in-out infinite alternate;}
+.amb::after{content:'';position:absolute;left:-40px;bottom:60px;width:260px;height:400px;background:radial-gradient(ellipse at 40% 60%,rgba(201,168,76,0.14) 0%,rgba(201,168,76,0.05) 50%,transparent 72%);filter:blur(50px);animation:drift2 13s ease-in-out infinite alternate;}
+@keyframes drift{0%{transform:translateY(0) scale(1);}100%{transform:translateY(-22px) scale(1.06);}}
+@keyframes drift2{0%{transform:translateY(0) scale(1);}100%{transform:translateY(18px) scale(1.08);}}
+
+.wrap{position:relative;z-index:1;max-width:420px;margin:0 auto;padding:54px 24px 80px;}
+
+.top-back{display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(250,247,242,0.5);text-decoration:none;font-weight:500;margin-bottom:30px;transition:color .2s;}
+.top-back:hover{color:#C9A84C;}
+.top-back svg{width:14px;height:14px;fill:currentColor;}
+
+.head-eyebrow{font-size:9px;letter-spacing:5px;color:#C9A84C;text-transform:uppercase;font-weight:600;margin-bottom:12px;opacity:0.85;}
+.head-title{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:700;color:#FAF7F2;line-height:1.0;letter-spacing:-1px;margin-bottom:14px;}
+.head-note{font-family:'Jost',sans-serif;font-size:12px;font-weight:300;color:rgba(250,247,242,0.55);line-height:1.6;margin-bottom:30px;}
+
+.toggle{display:flex;gap:8px;margin-bottom:34px;}
+.toggle button{flex:1;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.22);color:rgba(250,247,242,0.6);padding:11px 0;border-radius:11px;font-family:'Jost',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .25s;-webkit-tap-highlight-color:transparent;}
+.toggle button.active{background:linear-gradient(135deg,#d4af37,#b89326);border-color:transparent;color:#0a0805;box-shadow:0 6px 20px rgba(180,140,30,0.3);}
+
+.panel{display:none;}
+.panel.show{display:block;animation:fade .35s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#C9A84C;margin-bottom:18px;letter-spacing:0.3px;}
+.legal-list{list-style:none;counter-reset:li;}
+.legal-list li{position:relative;padding:0 0 18px 30px;counter-increment:li;font-family:'Jost',sans-serif;font-size:13.5px;font-weight:300;line-height:1.6;color:rgba(250,247,242,0.78);}
+.legal-list li::before{content:counter(li);position:absolute;left:0;top:1px;width:20px;height:20px;border:1px solid rgba(201,168,76,0.4);border-radius:50%;color:#C9A84C;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;}
+.legal-list li b{color:#FAF7F2;font-weight:600;}
+.legal-list li a{color:#C9A84C;text-decoration:none;border-bottom:1px solid rgba(201,168,76,0.4);}
+
+.consent{margin-top:26px;padding:16px 18px;border-radius:12px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.18);font-family:'Jost',sans-serif;font-size:12px;font-weight:300;line-height:1.55;color:rgba(250,247,242,0.7);}
+.consent b{color:#C9A84C;font-weight:600;}
+
+.legal-foot{margin-top:48px;text-align:center;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(250,247,242,0.3);}
+</style>
+</head>
+<body>
+<div class="amb"></div>
+<div class="wrap">
+
+  <a class="top-back" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg>
+    Back to Home
+  </a>
+
+  <div class="head-eyebrow">The Fine Print</div>
+  <h1 class="head-title">Terms of Use</h1>
+  <div class="head-note">A plain-language summary of how we work.</div>
+
+  <div class="panel show" id="panelTerms">
+    <div class="sec-title">Terms of Use</div>
+    <ol class="legal-list">
+      <li>By booking through this app, you agree to these terms.</li>
+      <li>Booking details you provide (name, phone) must be correct.</li>
+      <li>This app is for booking salon services and viewing offers.</li>
+      <li>Please don't misuse the app - no spam, fake bookings, or attempts to disrupt it.</li>
+      <li>All content here - logo, photos, Aisha, text - belongs to Flare to Flame.</li>
+      <li>Aisha is an AI-created brand host of Flare to Flame.</li>
+      <li>We may update services, offers, or prices at any time.</li>
+      <li>We keep information accurate but aren't liable for minor errors or occasional downtime.</li>
+      <li>Indian law applies. Ghaziabad / NCR jurisdiction.</li>
+    </ol>
+  </div>
+
+  <p style="font-size:12px;text-align:center;margin-top:20px;"><a href="privacy.html" style="color:var(--gold);">Read our Privacy Policy &rarr;</a></p>
+
+  <div class="legal-foot">Because Details Define You</div>
+
+</div>
+</body>
+</html>

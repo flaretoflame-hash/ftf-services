@@ -1313,6 +1313,8 @@ loadOffers();
   var el = document.getElementById('expAssure'), i = 0;
   if (el) setInterval(function(){ i = (i + 1) % lines.length; el.textContent = lines[i]; }, 10000);
 })();
+  /* Feedback deep link (24 Oct 2026): ftf-services/#feedback opens the feedback form. Used in client WhatsApp messages. */
+  window.addEventListener('load', function () { try { if (location.hash === '#feedback') openFeedback(); } catch (e) {} });
 </script>
 </body>
 </html>

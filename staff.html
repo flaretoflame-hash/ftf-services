@@ -364,15 +364,23 @@ input::placeholder { color: rgba(250,247,242,0.3); }
     <h2>लॉगिन करें</h2>
     <label for="phone">अपना 10 अंकों का फ़ोन नंबर डालें</label>
     <input id="phone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX" maxlength="12">
-    <button class="btn" id="btnSend">कोड भेजें</button>
+    <button class="btn" id="btnSend">आगे बढ़ें</button>
     <div class="msg" id="msgPhone"></div>
   </div>
 
-  <!-- ================= SCREEN 2: OTP ================= -->
+  <!-- ================= SCREEN 2: PIN (or first-time PIN setup) ================= -->
   <div id="scrOtp" class="card hidden">
-    <h2>कोड डालें</h2>
-    <label for="otp">WhatsApp पर भेजा गया 4 अंकों का कोड डालें</label>
-    <input id="otp" class="otp-input" type="tel" inputmode="numeric" placeholder="••••" maxlength="4">
+    <h2 id="pinTitle">PIN डालें</h2>
+    <div id="setupBox" class="hidden">
+      <label for="setupCode">मालिक से मिला सेटअप कोड</label>
+      <input id="setupCode" class="otp-input" type="tel" inputmode="numeric" maxlength="10" autocomplete="off">
+    </div>
+    <label for="otp" id="pinLabel">अपना 6 अंकों का PIN डालें</label>
+    <input id="otp" class="otp-input" type="password" inputmode="numeric" placeholder="••••••" maxlength="6" autocomplete="current-password">
+    <div id="pin2Box" class="hidden">
+      <label for="pin2">PIN दोबारा डालें</label>
+      <input id="pin2" class="otp-input" type="password" inputmode="numeric" placeholder="••••••" maxlength="6" autocomplete="new-password">
+    </div>
     <button class="btn" id="btnVerify">लॉगिन करें</button>
     <button class="btn btn-ghost" id="btnBack">वापस जाएँ</button>
     <div class="msg" id="msgOtp"></div>
@@ -547,7 +555,7 @@ input::placeholder { color: rgba(250,247,242,0.3); }
     <div class="modal-field"><label>पुराने ट्रीटमेंट</label><input type="text" id="cfPast" maxlength="500"></div>
     <div class="modal-field"><label>मेडिकल नोट (क्लाइंट खुद बताए तो)</label><input type="text" id="cfMedical" maxlength="500"></div>
     <div class="modal-field"><div class="chk-grid"><label><input type="checkbox" id="cfPatch"> पैच टेस्ट हो गया</label></div></div>
-    <div class="modal-field"><div class="chk-grid"><label><input type="checkbox" id="cfConsent"> क्लाइंट ने यह जानकारी सेव करने की सहमति दी है</label></div></div>
+    <div class="modal-field"><div class="chk-grid"><label><input type="checkbox" id="cfConsent"> क्लाइंट को बताया कि यह जानकारी सिर्फ़ उनके ट्रीटमेंट और सुरक्षा के लिए रखी जाएगी, और उन्होंने सहमति दी है</label></div></div>
     <div class="msg" id="cfMsg"></div>
     <div class="modal-btns">
       <button class="cancel" id="cfCancel">रद्द करें</button>
@@ -558,6 +566,13 @@ input::placeholder { color: rgba(250,247,242,0.3); }
 
 <script>
 const API = 'https://ftf-airtable.flaretoflame.workers.dev';
+// If the Worker says the session is gone or access was removed, go back to the login screen.
+const _fetch = window.fetch.bind(window);
+window.fetch = async function (...a) {
+  const r = await _fetch(...a);
+  if (r.status === 401 && String(a[0]).indexOf(API) === 0) { try { logout(); } catch (e) { /* page not ready */ } }
+  return r;
+};
 // SECURITY (11 Oct 2026): every value that comes from the server is escaped before it goes into the page.
 function esc(v) {
   return String(v == null ? '' : v).replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
@@ -590,7 +605,8 @@ if (savedToken && savedName) {
   }
 }
 
-/* ---------------- STEP 1: SEND OTP ---------------- */
+/* ---------------- STEP 1: PHONE -> PIN, OR FIRST-TIME PIN SETUP ---------------- */
+let loginMode = 'pin';
 $('btnSend').addEventListener('click', async () => {
   const phone = normalizePhone($('phone').value).slice(-10);
   if (phone.length !== 10) {
@@ -599,42 +615,30 @@ $('btnSend').addEventListener('click', async () => {
   }
   $('btnSend').disabled = true;
   setMsg('msgPhone', 'जाँच हो रही है…');
-
   try {
-    // lookup first — friendly error if not registered
     const lr = await fetch(API + '/staff-lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone })
     });
     const lookup = await lr.json();
-    if (!lookup.found) {
+    if (lr.status === 429) {
+      setMsg('msgPhone', 'बहुत कोशिशें हो गईं। थोड़ी देर बाद आएँ।', 'err');
+    } else if (!lookup.found) {
       setMsg('msgPhone', 'यह नंबर रजिस्टर नहीं है। मालिक से संपर्क करें।', 'err');
-      $('btnSend').disabled = false;
-      return;
-    }
-
-    const sr = await fetch(API + '/send-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone })
-    });
-    const sent = await sr.json();
-    if (!sent.ok) {
-      setMsg('msgPhone', 'कोड भेजने में दिक्कत हुई। फिर कोशिश करें।', 'err');
-      $('btnSend').disabled = false;
-      return;
-    }
-
-    currentPhone = phone;
-    hide('scrPhone'); show('scrOtp');
-    $('otp').value = ''; $('otp').focus();
-
-    if (sent.devOtp) {
-      // testing mode only — disappears automatically when Composio is wired
-      setMsg('msgOtp', 'टेस्टिंग कोड: ' + sent.devOtp, 'dev');
     } else {
-      setMsg('msgOtp', 'कोड WhatsApp पर भेज दिया गया है', 'ok');
+      currentPhone = phone;
+      loginMode = lookup.hasPin ? 'pin' : 'setup';
+      const setup = loginMode === 'setup';
+      $('setupBox').classList.toggle('hidden', !setup);
+      $('pin2Box').classList.toggle('hidden', !setup);
+      $('pinTitle').textContent = setup ? 'पहली बार: अपना PIN बनाएँ' : 'PIN डालें';
+      $('pinLabel').textContent = setup ? 'नया 6 अंकों का PIN चुनें' : 'अपना 6 अंकों का PIN डालें';
+      $('btnVerify').textContent = setup ? 'PIN बनाएँ और लॉगिन करें' : 'लॉगिन करें';
+      ['otp', 'pin2', 'setupCode'].forEach(id => { $(id).value = ''; });
+      setMsg('msgOtp', '');
+      hide('scrPhone'); show('scrOtp');
+      $(setup ? 'setupCode' : 'otp').focus();
     }
   } catch (e) {
     setMsg('msgPhone', 'नेटवर्क में दिक्कत है। फिर कोशिश करें।', 'err');
@@ -642,31 +646,49 @@ $('btnSend').addEventListener('click', async () => {
   $('btnSend').disabled = false;
 });
 
-/* ---------------- STEP 2: VERIFY OTP ---------------- */
+/* ---------------- STEP 2: PIN LOGIN (first time: make the PIN with the owner's setup code, then log in) ---------------- */
 $('btnVerify').addEventListener('click', async () => {
-  const otp = $('otp').value.trim();
-  if (otp.length !== 4) {
-    setMsg('msgOtp', '4 अंकों का कोड डालें', 'err');
+  const pin = $('otp').value.trim();
+  if (!/^\d{6}$/.test(pin)) {
+    setMsg('msgOtp', '6 अंकों का PIN डालें', 'err');
     return;
   }
   $('btnVerify').disabled = true;
-  setMsg('msgOtp', 'जाँच हो रही है…');
-
   try {
-    const r = await fetch(API + '/verify-otp', {
+    if (loginMode === 'setup') {
+      if ($('pin2').value.trim() !== pin) {
+        setMsg('msgOtp', 'दोनों PIN एक जैसे नहीं हैं', 'err');
+        $('btnVerify').disabled = false;
+        return;
+      }
+      setMsg('msgOtp', 'PIN बन रहा है…');
+      const sr = await fetch(API + '/pin-setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentPhone, setupCode: $('setupCode').value.trim(), newPin: pin })
+      });
+      const set = await sr.json();
+      if (!set.ok) {
+        setMsg('msgOtp', sr.status === 429 ? 'बहुत कोशिशें हो गईं। 15 मिनट बाद आएँ।'
+          : (set.error === 'Choose a harder PIN' ? 'यह PIN आसान है। कोई दूसरा चुनें।' : 'सेटअप कोड गलत है। मालिक से पूछें।'), 'err');
+        $('btnVerify').disabled = false;
+        return;
+      }
+    }
+    setMsg('msgOtp', 'जाँच हो रही है…');
+    const r = await fetch(API + '/pin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: currentPhone, otp })
+      body: JSON.stringify({ phone: currentPhone, pin })
     });
     const res = await r.json();
     if (!res.ok || !res.verified) {
-      setMsg('msgOtp', res.error === 'Incorrect code'
-        ? 'कोड गलत है। फिर से डालें।'
-        : 'कोड की समय-सीमा खत्म हो गई। वापस जाकर नया कोड लें।', 'err');
+      setMsg('msgOtp', r.status === 429 ? 'बहुत कोशिशें हो गईं। 15 मिनट बाद आएँ।' : 'PIN गलत है। फिर से डालें।', 'err');
       $('btnVerify').disabled = false;
       return;
     }
 
+    ['otp', 'pin2', 'setupCode'].forEach(id => { $(id).value = ''; });
     sessionStorage.setItem('ftf_token', res.sessionToken);
     sessionStorage.setItem('ftf_name', res.name);
     sessionStorage.setItem('ftf_id', res.id);
@@ -1247,7 +1269,7 @@ function logout() {
   sessionStorage.removeItem('ftf_role');
   sessionStorage.removeItem('ftf_consented');
   hide('scrDash'); show('scrPhone');
-  $('phone').value = ''; $('otp').value = '';
+  $('phone').value = ''; $('otp').value = ''; $('pin2').value = ''; $('setupCode').value = '';
   setMsg('msgPhone', ''); setMsg('msgAvail', '');
 }
 $('btnLogout').addEventListener('click', logout);

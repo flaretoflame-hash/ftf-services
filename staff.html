@@ -274,7 +274,7 @@ input::placeholder { color: rgba(250,247,242,0.3); }
 .lb-bar-pct { font-size: 11px; color: var(--muted); width: 34px; text-align: right; }
 
 
-.bill-btn {
+.bill-btn, .rec-btn {
   font-size: 11px; padding: 5px 10px; border-radius: 20px; margin-top: 6px;
   border: 1px solid var(--gold); color: var(--gold); background: rgba(201,168,76,0.1);
   font-family: 'Tiro Devanagari Hindi', serif; cursor: pointer; display: inline-block;
@@ -295,6 +295,10 @@ input::placeholder { color: rgba(250,247,242,0.3); }
   width: 100%; box-sizing: border-box; background: rgba(250,247,242,0.06); color: var(--offwhite);
   border: 1px solid rgba(250,247,242,0.18); border-radius: 10px; padding: 10px 12px; font-size: 15px;
 }
+.modal-box.tall { max-height: 88vh; overflow-y: auto; }
+.chk-grid { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.chk-grid label { display: flex; align-items: center; gap: 6px; color: var(--offwhite); font-size: 13px; margin: 0; }
+.chk-grid input { width: auto; }
 .modal-summary { color: var(--gold); font-size: 14px; margin: 10px 0; font-family: 'Tiro Devanagari Hindi', serif; min-height: 18px; }
 .modal-btns { display: flex; gap: 10px; margin-top: 6px; }
 .modal-btns button {
@@ -489,6 +493,57 @@ input::placeholder { color: rgba(250,247,242,0.3); }
     <div class="modal-btns">
       <button class="cancel" id="billCancel">रद्द करें</button>
       <button class="confirm" id="billConfirm">बिल बनाएं</button>
+    </div>
+  </div>
+</div>
+
+<!-- VISIT RECORD + CONSULTATION MODALS (added 02 Nov 2026) -->
+<div class="modal-overlay hidden" id="visitModal">
+  <div class="modal-box tall">
+    <h3>विज़िट रिकॉर्ड</h3>
+    <div class="modal-field"><label>सर्विस</label><select id="vrService"></select></div>
+    <div class="modal-field"><label>सिटिंग नंबर (कुल कितनी सिटिंग)</label>
+      <div style="display:flex;gap:8px;"><input type="number" id="vrSitting" min="1" max="50" inputmode="numeric" placeholder="जैसे 2">
+      <input type="number" id="vrTotal" min="1" max="50" inputmode="numeric" placeholder="जैसे 4"></div></div>
+    <div class="modal-field"><label>इस्तेमाल हुए प्रोडक्ट</label><div class="chk-grid" id="vrProducts"></div></div>
+    <div class="modal-field"><label>नतीजा (नोट)</label><input type="text" id="vrNotes" maxlength="500"></div>
+    <div class="modal-field"><label>क्लाइंट को रेटिंग दें (1–5)</label>
+      <select id="vrRating"><option value="">चुनें</option><option value="5">5 – बहुत अच्छा</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1 – मुश्किल</option></select></div>
+    <div class="modal-field"><label>रेटिंग का कारण</label><input type="text" id="vrWhy" maxlength="500"></div>
+    <div class="modal-field"><div class="chk-grid"><label><input type="checkbox" id="vrProblem"> कोई दिक्कत / शिकायत हुई</label></div></div>
+    <div id="vrProblemBox" class="hidden">
+      <div class="modal-field"><label>दिक्कत का type</label>
+        <select id="vrProblemType"><option>Service quality</option><option>Product reaction</option><option>Staff behaviour</option><option>Billing</option><option>Waiting time</option><option>Other</option></select></div>
+      <div class="modal-field"><label>क्या हुआ</label><input type="text" id="vrProblemDetail" maxlength="500"></div>
+    </div>
+    <div class="modal-field"><label>फॉलो-अप तारीख (ज़रूरत हो तो)</label><input type="date" id="vrFollow"></div>
+    <div class="msg" id="vrMsg"></div>
+    <div class="modal-btns">
+      <button class="cancel" id="vrCancel">रद्द करें</button>
+      <button class="confirm" id="vrSave">सेव करें</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="cfModal">
+  <div class="modal-box tall">
+    <h3>कंसल्टेशन फॉर्म</h3>
+    <div class="modal-field"><label>क्षेत्र</label>
+      <select id="cfArea"><option value="Hair">बाल (Hair)</option><option value="Skin">स्किन (Skin)</option><option value="Both">दोनों (Both)</option></select></div>
+    <div class="modal-field"><label>बालों का type</label><select id="cfHairType"></select></div>
+    <div class="modal-field"><label>स्कैल्प</label><select id="cfScalp"></select></div>
+    <div class="modal-field"><label>बालों की समस्या</label><div class="chk-grid" id="cfHairConcerns"></div></div>
+    <div class="modal-field"><label>स्किन type</label><select id="cfSkinType"></select></div>
+    <div class="modal-field"><label>स्किन की समस्या</label><div class="chk-grid" id="cfSkinConcerns"></div></div>
+    <div class="modal-field"><label>एलर्जी</label><input type="text" id="cfAllergies" maxlength="500"></div>
+    <div class="modal-field"><label>पुराने ट्रीटमेंट</label><input type="text" id="cfPast" maxlength="500"></div>
+    <div class="modal-field"><label>मेडिकल नोट (क्लाइंट खुद बताए तो)</label><input type="text" id="cfMedical" maxlength="500"></div>
+    <div class="modal-field"><div class="chk-grid"><label><input type="checkbox" id="cfPatch"> पैच टेस्ट हो गया</label></div></div>
+    <div class="modal-field"><div class="chk-grid"><label><input type="checkbox" id="cfConsent"> क्लाइंट ने यह जानकारी सेव करने की सहमति दी है</label></div></div>
+    <div class="msg" id="cfMsg"></div>
+    <div class="modal-btns">
+      <button class="cancel" id="cfCancel">रद्द करें</button>
+      <button class="confirm" id="cfSave">सेव करें</button>
     </div>
   </div>
 </div>
@@ -774,18 +829,25 @@ async function loadSchedule(role) {
       const billBtn = (canEdit && a.status === 'Completed')
         ? '<button class="bill-btn" data-bill-id="' + esc(a.appointmentId) + '">बिल बनाएं</button>'
         : '';
+      const recBtns = (a.status === 'In Progress' || a.status === 'Completed')
+        ? '<button class="rec-btn" data-cf-id="' + esc(a.appointmentId) + '">कंसल्टेशन</button> ' +
+          '<button class="rec-btn" data-vr-id="' + esc(a.appointmentId) + '">विज़िट रिकॉर्ड</button>'
+        : '';
       row.innerHTML =
         '<div class="sched-left">' +
           '<div class="sched-time">' + esc(timeTxt) + '</div>' +
           '<div class="sched-client">' + esc(a.clientName) + '</div>' +
           '<div class="sched-dur">' + esc(a.duration || 0) + ' मिनट</div>' +
-          billBtn +
+          billBtn + recBtns +
         '</div>' +
         '<span class="badge' + (canEdit ? ' tap' : '') + '" data-s="' + esc(a.status) + '" data-id="' + esc(a.appointmentId) + '">' +
           esc(STATUS_HI[a.status] || a.status) +
         '</span>';
       list.appendChild(row);
     });
+
+    list.querySelectorAll('[data-vr-id]').forEach(b => b.addEventListener('click', () => openVisitModal(b.dataset.vrId)));
+    list.querySelectorAll('[data-cf-id]').forEach(b => b.addEventListener('click', () => openConsultModal(b.dataset.cfId)));
 
     if (canEdit) {
       list.querySelectorAll('.bill-btn').forEach(btn => {
@@ -871,6 +933,103 @@ $('billConfirm').addEventListener('click', async () => {
     setMsg('billMsg', 'नेटवर्क में दिक्कत है।', 'err');
     $('billConfirm').disabled = false;
   }
+});
+
+/* ---------------- VISIT RECORD + CONSULTATION (added 02 Nov 2026) ---------------- */
+const CF_LISTS = {
+  hairType: ['Straight', 'Wavy', 'Curly', 'Coily'],
+  scalp: ['Normal', 'Oily', 'Dry', 'Dandruff', 'Sensitive'],
+  hairConcerns: ['Hair fall', 'Dandruff', 'Frizz', 'Dryness', 'Damage', 'Thinning', 'Greying', 'Split ends', 'Colour care'],
+  skinType: ['Normal', 'Oily', 'Dry', 'Combination', 'Sensitive'],
+  skinConcerns: ['Acne', 'Pigmentation', 'Tan', 'Dullness', 'Open pores', 'Dark circles', 'Wrinkles', 'Sensitivity', 'Dryness']
+};
+const optHtml = list => '<option value="">—</option>' + list.map(v => '<option>' + esc(v) + '</option>').join('');
+const chkHtml = list => list.map(v => '<label><input type="checkbox" value="' + esc(v) + '"> ' + esc(v) + '</label>').join('');
+const ticked = id => Array.from($(id).querySelectorAll('input:checked')).map(x => x.value);
+let vrAppt = null, cfAppt = null;
+
+async function sendJson(path, body) {
+  const r = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  return { status: r.status, data: await r.json().catch(() => ({})) };
+}
+
+async function openVisitModal(appointmentId) {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token) return;
+  vrAppt = appointmentId;
+  ['vrSitting', 'vrTotal', 'vrNotes', 'vrWhy', 'vrProblemDetail', 'vrFollow'].forEach(id => { $(id).value = ''; });
+  $('vrRating').value = ''; $('vrProblem').checked = false; hide('vrProblemBox');
+  $('vrSave').disabled = false;
+  setMsg('vrMsg', 'लोड हो रहा है…');
+  show('visitModal');
+  try {
+    const r = await fetch(API + '/visit-context?sessionToken=' + encodeURIComponent(token) + '&appointmentId=' + encodeURIComponent(appointmentId));
+    const c = await r.json();
+    if (!c.ok) { setMsg('vrMsg', 'खुल नहीं पाया।', 'err'); return; }
+    $('vrService').innerHTML = c.services.map(s => '<option value="' + esc(s.id) + '">' + esc(s.name) + '</option>').join('');
+    $('vrProducts').innerHTML = c.products.map(p => '<label><input type="checkbox" value="' + esc(p.id) + '"> ' + esc(p.name) + '</label>').join('');
+    setMsg('vrMsg', '');
+  } catch (e) { setMsg('vrMsg', 'नेटवर्क में दिक्कत है।', 'err'); }
+}
+function closeVisitModal() { hide('visitModal'); vrAppt = null; }
+$('vrCancel').addEventListener('click', closeVisitModal);
+$('vrProblem').addEventListener('change', () => { $('vrProblemBox').classList.toggle('hidden', !$('vrProblem').checked); });
+
+$('vrSave').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token || !vrAppt) { closeVisitModal(); return; }
+  if (!$('vrRating').value) { setMsg('vrMsg', 'क्लाइंट की रेटिंग चुनें।', 'err'); return; }
+  $('vrSave').disabled = true;
+  setMsg('vrMsg', 'सेव हो रहा है…');
+  try {
+    const { status, data } = await sendJson('/save-visit', {
+      sessionToken: token, appointmentId: vrAppt, serviceId: $('vrService').value,
+      sitting: $('vrSitting').value, totalSittings: $('vrTotal').value,
+      productIds: ticked('vrProducts'), resultNotes: $('vrNotes').value,
+      rating: Number($('vrRating').value), ratingReason: $('vrWhy').value,
+      problem: $('vrProblem').checked, problemType: $('vrProblemType').value, problemDetail: $('vrProblemDetail').value,
+      followUpDate: $('vrFollow').value
+    });
+    if (data.ok) { setMsg('vrMsg', 'रिकॉर्ड सेव हो गया ✓', 'ok'); setTimeout(closeVisitModal, 1500); }
+    else if (status === 409) { setMsg('vrMsg', 'इस सर्विस का रिकॉर्ड पहले से सेव है।', 'err'); }
+    else { setMsg('vrMsg', 'सेव नहीं हुआ। फिर कोशिश करें।', 'err'); $('vrSave').disabled = false; }
+  } catch (e) { setMsg('vrMsg', 'नेटवर्क में दिक्कत है।', 'err'); $('vrSave').disabled = false; }
+});
+
+function openConsultModal(appointmentId) {
+  cfAppt = appointmentId;
+  $('cfHairType').innerHTML = optHtml(CF_LISTS.hairType);
+  $('cfScalp').innerHTML = optHtml(CF_LISTS.scalp);
+  $('cfSkinType').innerHTML = optHtml(CF_LISTS.skinType);
+  $('cfHairConcerns').innerHTML = chkHtml(CF_LISTS.hairConcerns);
+  $('cfSkinConcerns').innerHTML = chkHtml(CF_LISTS.skinConcerns);
+  ['cfAllergies', 'cfPast', 'cfMedical'].forEach(id => { $(id).value = ''; });
+  $('cfPatch').checked = false; $('cfConsent').checked = false; $('cfArea').value = 'Hair';
+  $('cfSave').disabled = false;
+  setMsg('cfMsg', '');
+  show('cfModal');
+}
+function closeConsultModal() { hide('cfModal'); cfAppt = null; }
+$('cfCancel').addEventListener('click', closeConsultModal);
+
+$('cfSave').addEventListener('click', async () => {
+  const token = sessionStorage.getItem('ftf_token');
+  if (!token || !cfAppt) { closeConsultModal(); return; }
+  if (!$('cfConsent').checked) { setMsg('cfMsg', 'क्लाइंट की सहमति ज़रूरी है।', 'err'); return; }
+  $('cfSave').disabled = true;
+  setMsg('cfMsg', 'सेव हो रहा है…');
+  try {
+    const { status, data } = await sendJson('/save-consultation', {
+      sessionToken: token, appointmentId: cfAppt, consent: true, area: $('cfArea').value,
+      hairType: $('cfHairType').value, scalp: $('cfScalp').value, hairConcerns: ticked('cfHairConcerns'),
+      skinType: $('cfSkinType').value, skinConcerns: ticked('cfSkinConcerns'),
+      allergies: $('cfAllergies').value, pastTreatments: $('cfPast').value, medicalNotes: $('cfMedical').value,
+      patchTest: $('cfPatch').checked
+    });
+    if (data.ok) { setMsg('cfMsg', 'फॉर्म सेव हो गया ✓', 'ok'); setTimeout(closeConsultModal, 1500); }
+    else if (status === 409) { setMsg('cfMsg', 'इस बुकिंग का फॉर्म पहले से सेव है।', 'err'); }
+    else { setMsg('cfMsg', 'सेव नहीं हुआ। फिर कोशिश करें।', 'err'); $('cfSave').disabled = false; }
+  } catch (e) { setMsg('cfMsg', 'नेटवर्क में दिक्कत है।', 'err'); $('cfSave').disabled = false; }
 });
 
 /* ---------------- JOIN CONSENTS (added 03 Jul 2026) ---------------- */
